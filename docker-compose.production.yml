@@ -1,0 +1,133 @@
+# Docker Compose de PRODUÇÃO — Informatizou Prospect (spec §42/§47).
+# Uso na VPS (Hostinger):  docker compose -f docker-compose.production.yml up -d --build
+#
+# Requisitos: arquivo .env com segredos fortes e domínios reais; DNS apontando
+# para a VPS (spec §43); certificados via Certbot (volume compartilhado).
+# NÃO faz seed de dados de desenvolvimento.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-informatizou}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+
+  minio:
+    image: minio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?defina MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?defina MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    command: >
+      sh -c "pnpm --filter @informatizou/database db:migrate:deploy &&
+             pnpm --filter @informatizou/api start"
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+
+  worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    command: ['pnpm', '--filter', '@informatizou/worker', 'start']
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: admin-web
+    environment:
+      NUXT_PUBLIC_API_BASE: https://api.informatizou.com.br
+    restart: always
+
+  public-web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: public-web
+    restart: always
+
+  demo-renderer:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: demo-renderer
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./infrastructure/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - api
+      - admin-web
+      - public-web
+      - demo-renderer
+    restart: always
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: always
+
+volumes:
+  pg_data:
+  redis_data:
+  minio_data:
+  certbot_conf:
+  certbot_www:
