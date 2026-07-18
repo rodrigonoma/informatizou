@@ -1,0 +1,35 @@
+{
+  "name": "@informatizou/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint . --ignore-pattern 'src/generated/**'",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "dotenv -e ../../.env -- prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:reset": "dotenv -e ../../.env -- prisma migrate reset --force",
+    "db:seed": "dotenv -e ../../.env -- prisma db seed",
+    "db:studio": "dotenv -e ../../.env -- prisma studio",
+    "db:format": "prisma format",
+    "db:validate": "prisma validate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.4.4",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -3,6 +3,10 @@ packages:
   - 'apps/*'
 
 # Dependências cujos build scripts têm permissão para rodar.
-# esbuild é usado por vitest/tsx e precisa compilar seu binário nativo.
+# esbuild: usado por vitest/tsx (binário nativo).
+# prisma/@prisma/*: geram o client e baixam engines.
 allowBuilds:
   esbuild: true
+  prisma: true
+  '@prisma/client': true
+  '@prisma/engines': true

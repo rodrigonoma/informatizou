@@ -23,6 +23,7 @@ pnpm-debug.log*
 
 # Prisma
 packages/database/prisma/*.db
+packages/database/src/generated/
 
 # Test / coverage
 coverage/
