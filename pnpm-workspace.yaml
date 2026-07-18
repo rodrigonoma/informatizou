@@ -13,3 +13,6 @@ allowBuilds:
   argon2: true
   # Acelerador nativo opcional do msgpackr (BullMQ). Funciona sem ele.
   msgpackr-extract: false
+  # File watcher nativo do Nuxt (HMR) e shim vue-demi (Pinia/vue-query).
+  '@parcel/watcher': true
+  vue-demi: true
