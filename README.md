@@ -107,9 +107,18 @@ noindex + `X-Robots-Tag` nas demos (§20) · aviso de demonstração (§19) · g
 SSRF (§41) · auditoria · lista de supressão/opt-out (§29) · WhatsApp apenas
 oficial e desabilitado por padrão (§4). Nenhuma API paga é usada na Fase 1.
 
-## Roadmap por fases
+## Roadmap por fases (todas concluídas ✅)
 
-1. **Fundação** ✅ (esta entrega) — monorepo, auth, banco, seed, provider fake, health, Docker.
-2. Pesquisa · 3. Qualificação · 4. Demos · 5. Prospecção · 6. Vendas · 7. Produção.
+1. **Fundação** — monorepo, auth, banco (todas as entidades §34), seed, provider fake, health, Docker.
+2. **Pesquisa** — campanhas, providers (fake/CSV), deduplicação §9, orquestração BullMQ, progresso e custos.
+3. **Qualificação** — verificação de site §10 (+SSRF), contatos §12, score §13, revisão §14, CRM.
+4. **Demos** — 7 templates §16, conteúdo §15 (sem inventar), geração/publicação/expiração §21, noindex, analytics §23.
+5. **Prospecção** — mensagens §26, aprovações §27, e-mail (SMTP), opt-out §29, follow-up §30, agente comercial §28.
+6. **Vendas** — planos §31, propostas §32 (HTML+PDF), conversão da demo em cliente §33, assinaturas.
+7. **Produção** — deploy VPS, Nginx+SSL, DNS §43, backups §44, monitoramento §45, dashboard.
 
-Cada fase é entregue executável e testada antes de avançar.
+**Fluxo autônomo ponta-a-ponta** (com `AUTONOMOUS_MODE=true`): pesquisa → qualificação → demo →
+publicação → prospecção → proposta → cliente, com os guardrails de compliance sempre ativos.
+
+135 testes automatizados. Documentação de deploy em [`docs/deployment`](./docs/deployment) e
+operações em [`docs/operations`](./docs/operations).
