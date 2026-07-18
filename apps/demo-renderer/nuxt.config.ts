@@ -5,6 +5,10 @@ export default defineNuxtConfig({
   ssr: true,
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
+  runtimeConfig: {
+    // Usado no SSR para buscar o conteúdo da demo na API.
+    apiBase: process.env.API_BASE_URL || 'http://localhost:4000',
+  },
   routeRules: {
     // X-Robots-Tag em TODAS as rotas (§20) — nunca indexar demonstrações.
     '/**': {

@@ -7,6 +7,7 @@ import {
   parseRedisConnection,
   configureQueues,
   closeQueues,
+  getQueue,
 } from '@informatizou/queue';
 import { makeProcessor } from './processors/index.js';
 
@@ -35,9 +36,17 @@ async function main(): Promise<void> {
   log.info({ queues: ALL_QUEUE_NAMES.length }, 'iniciando workers BullMQ');
 
   const workers = startWorkers(env.REDIS_URL);
+
+  // Worker recorrente de expiração de demos (§21): a cada hora.
+  await getQueue(QUEUE_NAMES.DEMO_EXPIRATION).add(
+    'expire',
+    {},
+    { repeat: { every: 60 * 60 * 1000 }, jobId: 'demo-expiration-cron' },
+  );
+
   log.info(
     { count: workers.length, demoExpiration: QUEUE_NAMES.DEMO_EXPIRATION },
-    'workers registrados',
+    'workers registrados (expiração recorrente a cada hora)',
   );
 
   const shutdown = async (signal: string): Promise<void> => {

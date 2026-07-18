@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { LeadStatus, ReviewStatus, SuppressionReason } from '@informatizou/shared';
+import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
 import { writeAudit } from '../../hooks/audit.js';
 
 /** Rotas de leads / CRM (spec §24/§35). */
@@ -168,6 +169,18 @@ export async function leadRoutes(app: FastifyInstance): Promise<void> {
         where: { id: lead.id },
         data: { status: approved ? LeadStatus.DEMO_READY : LeadStatus.REJECTED },
       });
+      // Aprovado → gera a demonstração (§18), se ainda não existir.
+      if (approved) {
+        const existingDemo = await app.prisma.demoSite.findUnique({ where: { leadId: lead.id } });
+        if (!existingDemo) {
+          await enqueue(
+            QUEUE_NAMES.DEMO_GENERATION,
+            'generate',
+            { leadId: lead.id, correlationId: lead.id },
+            { jobId: `generate-${lead.id}` },
+          );
+        }
+      }
       await app.prisma.leadActivity.create({
         data: {
           leadId: lead.id,

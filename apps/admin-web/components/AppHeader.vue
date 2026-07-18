@@ -13,6 +13,7 @@ const nav = [
   { to: '/dashboard', label: 'Visão geral' },
   { to: '/campaigns', label: 'Campanhas' },
   { to: '/leads', label: 'Leads' },
+  { to: '/demos', label: 'Demos' },
 ];
 </script>
 

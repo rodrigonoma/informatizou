@@ -235,6 +235,9 @@ importers:
       '@informatizou/dedup':
         specifier: workspace:*
         version: link:../../packages/dedup
+      '@informatizou/demo-templates':
+        specifier: workspace:*
+        version: link:../../packages/demo-templates
       '@informatizou/logging':
         specifier: workspace:*
         version: link:../../packages/logging
@@ -250,6 +253,9 @@ importers:
       '@informatizou/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@informatizou/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@informatizou/website-verification':
         specifier: workspace:*
         version: link:../../packages/website-verification
@@ -343,6 +349,19 @@ importers:
         version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
 
   packages/dedup:
+    dependencies:
+      '@informatizou/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
+
+  packages/demo-templates:
     dependencies:
       '@informatizou/shared':
         specifier: workspace:*

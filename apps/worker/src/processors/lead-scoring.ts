@@ -3,6 +3,7 @@ import { prisma } from '@informatizou/database';
 import { computeScore, type ScoreInput } from '@informatizou/scoring';
 import { verifyWebsite, scenarioToStatus } from '@informatizou/website-verification';
 import { WebsiteStatus, ScoreCategory, LeadStatus, ReviewStatus } from '@informatizou/shared';
+import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
 import { loadEnv } from '@informatizou/config';
 import { createLogger, withCorrelation } from '@informatizou/logging';
 
@@ -184,6 +185,16 @@ export async function leadScoringHandler(job: Job): Promise<unknown> {
             : LeadStatus.REVIEW_REQUIRED,
       },
     });
+
+    // Modo autônomo: aprovado automaticamente → gera a demo (§18).
+    if (reviewStatus === ReviewStatus.AUTOMATICALLY_APPROVED) {
+      await enqueue(
+        QUEUE_NAMES.DEMO_GENERATION,
+        'generate',
+        { leadId: lead.id, correlationId: campaignId ?? businessId },
+        { jobId: `generate-${lead.id}` },
+      );
+    }
   }
 
   await prisma.leadActivity.create({

@@ -5,6 +5,10 @@ import { QUEUE_NAMES, type QueueName } from '@informatizou/queue';
 import { businessSearchHandler } from './business-search.js';
 import { businessDeduplicationHandler } from './business-deduplication.js';
 import { leadScoringHandler } from './lead-scoring.js';
+import { demoGenerationHandler } from './demo-generation.js';
+import { demoPublicationHandler } from './demo-publication.js';
+import { demoExpirationHandler } from './demo-expiration.js';
+import { screenshotGenerationHandler } from './screenshot-generation.js';
 
 const baseLogger = createLogger({ name: 'worker' });
 
@@ -20,6 +24,10 @@ const HANDLERS: Partial<Record<QueueName, JobHandler>> = {
   [QUEUE_NAMES.BUSINESS_SEARCH]: businessSearchHandler,
   [QUEUE_NAMES.BUSINESS_DEDUPLICATION]: businessDeduplicationHandler,
   [QUEUE_NAMES.LEAD_SCORING]: leadScoringHandler,
+  [QUEUE_NAMES.DEMO_GENERATION]: demoGenerationHandler,
+  [QUEUE_NAMES.DEMO_PUBLICATION]: demoPublicationHandler,
+  [QUEUE_NAMES.DEMO_EXPIRATION]: demoExpirationHandler,
+  [QUEUE_NAMES.SCREENSHOT_GENERATION]: screenshotGenerationHandler,
 };
 
 /**
