@@ -1,0 +1,4 @@
+{
+  // Estende o tsconfig gerado pelo Nuxt (nuxt prepare / .nuxt).
+  "extends": "./.nuxt/tsconfig.json"
+}

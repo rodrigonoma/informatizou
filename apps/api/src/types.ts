@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@informatizou/database';
 import type { AccessTokenPayload, Action } from '@informatizou/auth';
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply } from 'fastify';
 
 declare module 'fastify' {
   interface FastifyInstance {
