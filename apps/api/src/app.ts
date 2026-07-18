@@ -19,6 +19,7 @@ import { leadRoutes } from './routes/leads/index.js';
 import { demoRoutes } from './routes/demos/index.js';
 import { outreachRoutes } from './routes/outreach/index.js';
 import { salesRoutes } from './routes/sales/index.js';
+import { adminRoutes } from './routes/admin/index.js';
 import './types.js';
 
 export interface BuildAppOptions {
@@ -76,6 +77,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(demoRoutes);
   await app.register(outreachRoutes);
   await app.register(salesRoutes);
+  await app.register(adminRoutes);
 
   return app;
 }
