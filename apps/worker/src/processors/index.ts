@@ -4,6 +4,7 @@ import { createLogger, withCorrelation } from '@informatizou/logging';
 import { QUEUE_NAMES, type QueueName } from '@informatizou/queue';
 import { businessSearchHandler } from './business-search.js';
 import { businessDeduplicationHandler } from './business-deduplication.js';
+import { leadScoringHandler } from './lead-scoring.js';
 
 const baseLogger = createLogger({ name: 'worker' });
 
@@ -18,6 +19,7 @@ function stubHandler(queue: QueueName): JobHandler {
 const HANDLERS: Partial<Record<QueueName, JobHandler>> = {
   [QUEUE_NAMES.BUSINESS_SEARCH]: businessSearchHandler,
   [QUEUE_NAMES.BUSINESS_DEDUPLICATION]: businessDeduplicationHandler,
+  [QUEUE_NAMES.LEAD_SCORING]: leadScoringHandler,
 };
 
 /**

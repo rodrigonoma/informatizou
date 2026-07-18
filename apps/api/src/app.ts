@@ -15,6 +15,7 @@ import { healthRoutes } from './routes/health/index.js';
 import { authRoutes } from './routes/auth/index.js';
 import { campaignRoutes } from './routes/campaigns/index.js';
 import { businessRoutes } from './routes/businesses/index.js';
+import { leadRoutes } from './routes/leads/index.js';
 import './types.js';
 
 export interface BuildAppOptions {
@@ -68,6 +69,7 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   await app.register(authRoutes, { prefix: '/auth' });
   await app.register(campaignRoutes);
   await app.register(businessRoutes);
+  await app.register(leadRoutes);
 
   return app;
 }

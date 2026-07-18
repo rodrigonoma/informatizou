@@ -241,12 +241,18 @@ importers:
       '@informatizou/queue':
         specifier: workspace:*
         version: link:../../packages/queue
+      '@informatizou/scoring':
+        specifier: workspace:*
+        version: link:../../packages/scoring
       '@informatizou/search-providers':
         specifier: workspace:*
         version: link:../../packages/search-providers
       '@informatizou/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@informatizou/website-verification':
+        specifier: workspace:*
+        version: link:../../packages/website-verification
       bullmq:
         specifier: ^5.34.0
         version: 5.80.7
@@ -391,6 +397,19 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
 
+  packages/scoring:
+    dependencies:
+      '@informatizou/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
+
   packages/search-providers:
     dependencies:
       '@informatizou/shared':
@@ -425,6 +444,19 @@ importers:
       minio:
         specifier: ^8.0.2
         version: 8.0.7
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
+
+  packages/website-verification:
+    dependencies:
+      '@informatizou/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       typescript:
         specifier: ^5.7.2

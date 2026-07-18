@@ -17,8 +17,10 @@
     "@informatizou/dedup": "workspace:*",
     "@informatizou/logging": "workspace:*",
     "@informatizou/queue": "workspace:*",
+    "@informatizou/scoring": "workspace:*",
     "@informatizou/search-providers": "workspace:*",
     "@informatizou/shared": "workspace:*",
+    "@informatizou/website-verification": "workspace:*",
     "bullmq": "^5.34.0"
   },
   "devDependencies": {

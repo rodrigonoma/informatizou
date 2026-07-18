@@ -12,6 +12,7 @@ async function logout() {
 const nav = [
   { to: '/dashboard', label: 'Visão geral' },
   { to: '/campaigns', label: 'Campanhas' },
+  { to: '/leads', label: 'Leads' },
 ];
 </script>
 

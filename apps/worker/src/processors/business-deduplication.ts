@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq';
 import { prisma } from '@informatizou/database';
 import { analyzeDuplicate, needsReview, type DedupRecord } from '@informatizou/dedup';
+import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
 import { createLogger, withCorrelation } from '@informatizou/logging';
 
 const baseLog = createLogger({ name: 'business-deduplication' });
@@ -90,6 +91,20 @@ export async function businessDeduplicationHandler(job: Job): Promise<unknown> {
     data: { status: 'COMPLETED' },
   });
 
-  log.info({ duplicatesRemoved, reviewFlagged, kept: kept.length }, 'deduplicação concluída');
-  return { duplicatesRemoved, reviewFlagged, kept: kept.length };
+  // Encadeia a qualificação (§10–§14): uma job por empresa mantida.
+  for (const record of kept) {
+    if (!record.id) continue;
+    await enqueue(
+      QUEUE_NAMES.LEAD_SCORING,
+      'qualify',
+      { businessId: record.id, campaignId, correlationId: campaignId },
+      { jobId: `qualify-${record.id}` },
+    );
+  }
+
+  log.info(
+    { duplicatesRemoved, reviewFlagged, kept: kept.length },
+    'deduplicação concluída, qualificação enfileirada',
+  );
+  return { duplicatesRemoved, reviewFlagged, kept: kept.length, qualificationEnqueued: kept.length };
 }
