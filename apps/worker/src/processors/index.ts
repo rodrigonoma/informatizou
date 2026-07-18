@@ -9,6 +9,9 @@ import { demoGenerationHandler } from './demo-generation.js';
 import { demoPublicationHandler } from './demo-publication.js';
 import { demoExpirationHandler } from './demo-expiration.js';
 import { screenshotGenerationHandler } from './screenshot-generation.js';
+import { outreachGenerationHandler } from './outreach-generation.js';
+import { outreachDeliveryHandler } from './outreach-delivery.js';
+import { outreachResponseHandler } from './outreach-response.js';
 
 const baseLogger = createLogger({ name: 'worker' });
 
@@ -28,6 +31,9 @@ const HANDLERS: Partial<Record<QueueName, JobHandler>> = {
   [QUEUE_NAMES.DEMO_PUBLICATION]: demoPublicationHandler,
   [QUEUE_NAMES.DEMO_EXPIRATION]: demoExpirationHandler,
   [QUEUE_NAMES.SCREENSHOT_GENERATION]: screenshotGenerationHandler,
+  [QUEUE_NAMES.OUTREACH_MESSAGE_GENERATION]: outreachGenerationHandler,
+  [QUEUE_NAMES.OUTREACH_DELIVERY]: outreachDeliveryHandler,
+  [QUEUE_NAMES.OUTREACH_RESPONSE_PROCESSING]: outreachResponseHandler,
 };
 
 /**

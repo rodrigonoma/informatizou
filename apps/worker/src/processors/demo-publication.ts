@@ -60,6 +60,16 @@ export async function demoPublicationHandler(job: Job): Promise<unknown> {
     { jobId: `screenshot-${demo.id}` },
   );
 
+  // Modo autônomo: gera a mensagem de prospecção (§26).
+  if (env.AUTONOMOUS_MODE) {
+    await enqueue(
+      QUEUE_NAMES.OUTREACH_MESSAGE_GENERATION,
+      'generate',
+      { leadId: demo.leadId, correlationId: demo.leadId },
+      { jobId: `outreach-${demo.leadId}` },
+    );
+  }
+
   log.info({ demoSiteId: demo.id, publicUrl, expiresAt }, 'demo publicada');
   return { published: true, publicUrl, expiresAt };
 }

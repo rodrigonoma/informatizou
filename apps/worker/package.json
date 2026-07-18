@@ -17,6 +17,8 @@
     "@informatizou/dedup": "workspace:*",
     "@informatizou/demo-templates": "workspace:*",
     "@informatizou/logging": "workspace:*",
+    "@informatizou/outreach": "workspace:*",
+    "@informatizou/providers": "workspace:*",
     "@informatizou/queue": "workspace:*",
     "@informatizou/scoring": "workspace:*",
     "@informatizou/search-providers": "workspace:*",

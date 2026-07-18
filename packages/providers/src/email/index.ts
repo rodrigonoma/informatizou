@@ -1,4 +1,5 @@
-import { ProviderDisabledError, ProviderNotImplementedError } from '../errors.js';
+import nodemailer, { type Transporter } from 'nodemailer';
+import { ProviderDisabledError } from '../errors.js';
 
 export interface EmailMessage {
   to: string;
@@ -40,15 +41,42 @@ export interface EmailProviderEnv {
   SMTP_FROM_EMAIL?: string;
 }
 
-/**
- * Provider SMTP — implementação real (nodemailer) chega na Fase 5. Enquanto o
- * envio não estiver habilitado, retorna o provider desabilitado.
- */
+/** Provider SMTP real (nodemailer). Conexão preguiçosa. */
 export class SmtpEmailProvider implements EmailProvider {
   public readonly name = 'smtp';
+  private transporter: Transporter | null = null;
+
   constructor(private readonly env: EmailProviderEnv) {}
-  send(_message: EmailMessage): Promise<EmailSendResult> {
-    throw new ProviderNotImplementedError('smtp', 'send');
+
+  private getTransporter(): Transporter {
+    if (!this.transporter) {
+      const port = this.env.SMTP_PORT ?? 587;
+      this.transporter = nodemailer.createTransport({
+        host: this.env.SMTP_HOST,
+        port,
+        secure: port === 465,
+        auth: this.env.SMTP_USER
+          ? { user: this.env.SMTP_USER, pass: this.env.SMTP_PASSWORD }
+          : undefined,
+      });
+    }
+    return this.transporter;
+  }
+
+  async send(message: EmailMessage): Promise<EmailSendResult> {
+    const fromName = message.fromName ?? this.env.SMTP_FROM_NAME ?? 'Informatizou';
+    const fromEmail = message.fromEmail ?? this.env.SMTP_FROM_EMAIL;
+    const info = await this.getTransporter().sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
+      headers: message.listUnsubscribe
+        ? { 'List-Unsubscribe': message.listUnsubscribe }
+        : undefined,
+    });
+    return { accepted: (info.accepted?.length ?? 0) > 0, providerMessageId: info.messageId };
   }
 }
 

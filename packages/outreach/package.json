@@ -1,5 +1,5 @@
 {
-  "name": "@informatizou/providers",
+  "name": "@informatizou/outreach",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,13 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@informatizou/shared": "workspace:*",
-    "@informatizou/logging": "workspace:*",
-    "nodemailer": "^6.9.16"
+    "@informatizou/shared": "workspace:*"
   },
-  "peerDependencies": {},
   "devDependencies": {
-    "@types/nodemailer": "^6.4.17",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }
