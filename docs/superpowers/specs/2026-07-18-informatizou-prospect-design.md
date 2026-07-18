@@ -196,6 +196,35 @@ Após cada fase: lint, typecheck, testes, build; correção de erros; atualizaç
 
 ---
 
-## 13. Próximo passo
+## 13. Premissas do proprietário (adendo 2026-07-18, pós-aprovação)
 
-Após aprovação deste design pelo proprietário: invocar a skill **writing-plans** para produzir o plano de implementação detalhado da **Fase 1**, e então executar.
+Diretrizes que passam a orientar TODAS as fases (registro SDD):
+
+1. **Autonomia ponta-a-ponta é a maior premissa.** O sistema deve ser capaz de rodar o fluxo inteiro — pesquisa → qualificação → geração de demo → prospecção → CRM → proposta → conversão — **sem intervenção humana**. Implicações de arquitetura:
+   - Cada etapa expõe um caminho **automático** (não só manual). Os modos da spec (`OutreachMode`, `ReviewStatus.AUTOMATICALLY_APPROVED`, `CampaignStatus`, `automaticDemoGeneration`) são cidadãos de primeira classe.
+   - Um **orquestrador** (pipeline BullMQ encadeado + um "autonomy controller") avança leads entre estágios automaticamente quando os critérios são satisfeitos, sem esperar clique humano.
+   - **Os guardrails de compliance NÃO são "intervenção humana"** e permanecem sempre ativos por código: supressão/opt-out, noindex, aviso de demonstração, SSRF, limites de custo, auditoria. Autonomia = ausência de _operador_ humano no caminho feliz, não ausência de _regras_. Onde a spec exige aprovação manual "por padrão", tornamos isso uma **flag configurável** (`AUTONOMOUS_MODE`) que, quando ligada, usa auto-aprovação baseada em critérios objetivos (score, confiança dos dados, ausência de inconsistências/bloqueio/duplicidade) — registrando tudo em auditoria.
+   - Toda decisão automática grava `LeadActivity`/`AuditLog` com o motivo, para rastreabilidade.
+2. **Observabilidade para depurar autonomia.** Logs estruturados (Pino) em cada transição de estágio, cada job (início/fim/erro/retry), cada decisão do autonomy controller e cada chamada de provider — com `correlationId` (campanha/lead/job). Erros sempre logados com contexto suficiente para diagnóstico sem reproduzir. Dead-letter visível.
+3. **Templates de demo = o produto.** Design **criativo ao extremo**, atrativo, que faça o comprador sentir que precisa do site. UX/UI de altíssimo nível. Usar o **máximo de capacidade de IA** para gerar layouts, seções, microcopy, paleta, efeitos e imagens por segmento. Ver seção 14.
+4. **IA aplicada com liberdade técnica.** Fica a critério do arquiteto onde usar IA/agentes para elevar qualidade e performance. Ver seção 14.
+5. **Não quebrar o que já funciona.** Cada fase preserva funcionalidades das anteriores; testes de regressão antes de avançar.
+
+## 14. Estratégia de IA e templates (o diferencial de venda)
+
+**Provider de IA (`packages/ai`, Anthropic Claude):** abstração `AiProvider` (spec §15/§28), com control de custo (`ProviderUsage`), cache, e limites por token/minuto/dia. Modelo padrão configurável via `ANTHROPIC_MODEL`.
+
+**Agentes de IA planejados:**
+- **Content Agent** — gera o conteúdo estruturado do site (título, seções, microcopy, CTA, SEO) a partir só de dados públicos verificados, respeitando as proibições da spec §15 (nunca inventar fundação, preços, cardápio, prêmios, etc.). Saída em **JSON estruturado validado por Zod**.
+- **Design/Art-Director Agent** — escolhe template base por segmento (spec §16) e gera um **design system por lead**: paleta, tipografia, ritmo de seções, tom visual, e "design tokens" (CSS variables) + variações de layout. Objetivo: cada demo parecer feita à mão, não um template genérico.
+- **Image Agent** — seleciona/ordena imagens públicas adequadas, trata e, quando faltar, gera imagens genéricas não enganosas (spec §17), com proveniência registrada.
+- **Outreach Agent** (spec §28) — seleciona leads aptos, gera mensagens personalizadas, sugere canal/horário, classifica respostas, cria follow-up — sempre dentro das regras (nunca contorna supressão/opt-out/aprovação-por-critério).
+- **QA/Review Agent** — `reviewGeneratedContent` (spec §15): valida que o conteúdo não inventou dados, que os avisos de demo estão presentes, e pontua a qualidade do resultado antes da auto-aprovação no modo autônomo.
+
+**Templates de demo (`packages/demo-templates`):** os 7 templates da spec §16 implementados como **componentes Vue altamente polidos** — responsivos, acessíveis, com animações/efeitos modernos (scroll reveal, parallax sutil, microinterações), dirigidos 100% por dados estruturados + design tokens gerados pela IA. **Zero conteúdo de lead hard-coded.** A skill **frontend-design** será usada na Fase 4 para maximizar a qualidade visual dos templates.
+
+> Nota: os agentes/IA entram nas fases 4–5. Na **Fase 1**, apenas a **abstração** `AiProvider` e o wiring de custo são criados (sem chamadas pagas) — o restante é implementado quando a fase correspondente chegar.
+
+## 15. Próximo passo
+
+Design aprovado pelo proprietário (2026-07-18) com as premissas acima. Modo de trabalho: **autônomo com escolhas recomendadas** — seguir sem novas perguntas de decisão, ajustando sob solicitação. Próximo: invocar **writing-plans** para o plano detalhado da **Fase 1** e executar.
