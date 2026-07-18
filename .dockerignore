@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.output
+**/.nuxt
+**/.turbo
+**/coverage
+.git
+**/*.log
+infrastructure/backups
+packages/database/src/generated
+.env

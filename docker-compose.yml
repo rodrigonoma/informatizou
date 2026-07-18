@@ -1,0 +1,152 @@
+# Docker Compose de desenvolvimento — Informatizou Prospect (spec §42/§47).
+# Suba com:  docker compose up --build
+#
+# Portas de HOST deslocadas para não colidir com outros projetos nesta máquina
+# (postgres 5442, redis 6389, minio 9100/9101). Internamente os serviços usam
+# as portas padrão via nome de serviço (postgres:5432, redis:6379, minio:9000).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: informatizou
+    ports:
+      - '5442:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6389:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9100:9000'
+      - '9101:9001'
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    command: >
+      sh -c "pnpm --filter @informatizou/database db:migrate:deploy &&
+             pnpm --filter @informatizou/database db:seed:raw &&
+             pnpm --filter @informatizou/api start"
+    env_file: .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/informatizou
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: http://minio:9000
+      API_PORT: '4000'
+      APP_BASE_URL: http://localhost:3000
+      ADMIN_BASE_URL: http://localhost:3001
+      DEMO_BASE_URL: http://localhost:3002
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    command: ['pnpm', '--filter', '@informatizou/worker', 'start']
+    env_file: .env
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/informatizou
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: admin-web
+    environment:
+      NUXT_PUBLIC_API_BASE: http://localhost:4000
+    ports:
+      - '3001:3000'
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  public-web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: public-web
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
+  demo-renderer:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.nuxt
+      args:
+        APP: demo-renderer
+    ports:
+      - '3002:3000'
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./infrastructure/nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
+      - admin-web
+      - public-web
+      - demo-renderer
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  redis_data:
+  minio_data:

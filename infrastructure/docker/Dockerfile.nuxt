@@ -1,0 +1,19 @@
+# Imagem para os apps Nuxt (admin-web, public-web, demo-renderer).
+# Multi-stage: build do Nitro e imagem de execução mínima com o .output.
+FROM node:22-slim AS build
+RUN corepack enable
+WORKDIR /app
+COPY . .
+RUN pnpm install --frozen-lockfile
+ARG APP
+RUN pnpm --filter @informatizou/${APP} build
+
+FROM node:22-slim AS run
+WORKDIR /app
+ARG APP
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+COPY --from=build /app/apps/${APP}/.output ./.output
+EXPOSE 3000
+CMD ["node", ".output/server/index.mjs"]

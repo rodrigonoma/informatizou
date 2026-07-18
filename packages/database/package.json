@@ -15,6 +15,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:reset": "dotenv -e ../../.env -- prisma migrate reset --force",
     "db:seed": "dotenv -e ../../.env -- prisma db seed",
+    "db:seed:raw": "prisma db seed",
     "db:studio": "dotenv -e ../../.env -- prisma studio",
     "db:format": "prisma format",
     "db:validate": "prisma validate"
