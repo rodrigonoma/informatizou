@@ -23,7 +23,11 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.1.0"
+    "@prisma/client": "^6.1.0",
+    "@informatizou/shared": "workspace:*",
+    "@informatizou/auth": "workspace:*",
+    "@informatizou/logging": "workspace:*",
+    "@informatizou/search-providers": "workspace:*"
   },
   "devDependencies": {
     "dotenv-cli": "^7.4.4",

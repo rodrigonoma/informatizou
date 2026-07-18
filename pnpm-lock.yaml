@@ -73,6 +73,18 @@ importers:
 
   packages/database:
     dependencies:
+      '@informatizou/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@informatizou/logging':
+        specifier: workspace:*
+        version: link:../logging
+      '@informatizou/search-providers':
+        specifier: workspace:*
+        version: link:../search-providers
+      '@informatizou/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@prisma/client':
         specifier: ^6.1.0
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
