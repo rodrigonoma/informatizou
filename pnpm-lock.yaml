@@ -117,6 +117,12 @@ importers:
       '@informatizou/providers':
         specifier: workspace:*
         version: link:../../packages/providers
+      '@informatizou/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@informatizou/search-providers':
+        specifier: workspace:*
+        version: link:../../packages/search-providers
       '@informatizou/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -226,9 +232,18 @@ importers:
       '@informatizou/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@informatizou/dedup':
+        specifier: workspace:*
+        version: link:../../packages/dedup
       '@informatizou/logging':
         specifier: workspace:*
         version: link:../../packages/logging
+      '@informatizou/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@informatizou/search-providers':
+        specifier: workspace:*
+        version: link:../../packages/search-providers
       '@informatizou/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -321,6 +336,19 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
 
+  packages/dedup:
+    dependencies:
+      '@informatizou/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
+
   packages/logging:
     dependencies:
       pino:
@@ -342,6 +370,19 @@ importers:
       '@informatizou/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
+
+  packages/queue:
+    dependencies:
+      bullmq:
+        specifier: ^5.34.0
+        version: 5.80.7
     devDependencies:
       typescript:
         specifier: ^5.7.2

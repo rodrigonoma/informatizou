@@ -17,6 +17,8 @@
     "@informatizou/database": "workspace:*",
     "@informatizou/logging": "workspace:*",
     "@informatizou/providers": "workspace:*",
+    "@informatizou/queue": "workspace:*",
+    "@informatizou/search-providers": "workspace:*",
     "@informatizou/shared": "workspace:*",
     "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^10.0.2",

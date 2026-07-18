@@ -10,8 +10,11 @@ import { securityPlugin } from './plugins/security.js';
 import { swaggerPlugin } from './plugins/swagger.js';
 import { prismaPlugin } from './plugins/prisma.js';
 import { authPlugin } from './plugins/auth.js';
+import { configureQueues } from '@informatizou/queue';
 import { healthRoutes } from './routes/health/index.js';
 import { authRoutes } from './routes/auth/index.js';
+import { campaignRoutes } from './routes/campaigns/index.js';
+import { businessRoutes } from './routes/businesses/index.js';
 import './types.js';
 
 export interface BuildAppOptions {
@@ -53,6 +56,9 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
     return reply.code(500).send({ error: 'Internal Server Error' });
   });
 
+  // Producers de fila usam o Redis configurado (para enfileirar jobs).
+  configureQueues(apiEnv().REDIS_URL);
+
   await app.register(securityPlugin);
   await app.register(swaggerPlugin);
   await app.register(prismaPlugin);
@@ -60,6 +66,8 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/auth' });
+  await app.register(campaignRoutes);
+  await app.register(businessRoutes);
 
   return app;
 }

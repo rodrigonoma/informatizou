@@ -14,7 +14,10 @@
   "dependencies": {
     "@informatizou/config": "workspace:*",
     "@informatizou/database": "workspace:*",
+    "@informatizou/dedup": "workspace:*",
     "@informatizou/logging": "workspace:*",
+    "@informatizou/queue": "workspace:*",
+    "@informatizou/search-providers": "workspace:*",
     "@informatizou/shared": "workspace:*",
     "bullmq": "^5.34.0"
   },

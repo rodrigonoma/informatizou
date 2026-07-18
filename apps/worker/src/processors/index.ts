@@ -1,22 +1,36 @@
 import type { Job, Processor } from 'bullmq';
 import { prisma } from '@informatizou/database';
 import { createLogger, withCorrelation } from '@informatizou/logging';
-import type { QueueName } from '../queues.js';
+import { QUEUE_NAMES, type QueueName } from '@informatizou/queue';
+import { businessSearchHandler } from './business-search.js';
+import { businessDeduplicationHandler } from './business-deduplication.js';
 
 const baseLogger = createLogger({ name: 'worker' });
 
+export type JobHandler = (job: Job) => Promise<unknown>;
+
+/** Handler stub (fases ainda não implementadas): apenas registra a execução. */
+function stubHandler(queue: QueueName): JobHandler {
+  return async () => ({ queue, handled: false, note: 'stub — implementação por fase' });
+}
+
+/** Registro de handlers reais por fila. Demais filas usam stub idempotente. */
+const HANDLERS: Partial<Record<QueueName, JobHandler>> = {
+  [QUEUE_NAMES.BUSINESS_SEARCH]: businessSearchHandler,
+  [QUEUE_NAMES.BUSINESS_DEDUPLICATION]: businessDeduplicationHandler,
+};
+
 /**
- * Processador stub idempotente (Fase 1). Registra início/fim de cada job em
- * `JobExecution` e loga com correlação. A lógica real de cada fila é preenchida
- * nas fases correspondentes — este esqueleto garante idempotência, logs,
- * progresso e rastreabilidade desde já.
+ * Cria o processador de uma fila: envelopa o handler com registro de
+ * `JobExecution` (início/fim/erro), logs correlacionados e idempotência.
  */
-export function makeStubProcessor(queue: QueueName): Processor {
+export function makeProcessor(queue: QueueName): Processor {
+  const handler = HANDLERS[queue] ?? stubHandler(queue);
+
   return async (job: Job) => {
     const correlationId =
       (job.data?.correlationId as string | undefined) ?? `${queue}:${job.id ?? 'no-id'}`;
     const log = withCorrelation(baseLogger, correlationId);
-
     log.info({ queue, jobId: job.id, name: job.name }, 'job iniciado');
 
     let execution: { id: string } | null = null;
@@ -35,23 +49,39 @@ export function makeStubProcessor(queue: QueueName): Processor {
         },
       });
     } catch (err) {
-      // Não falha o job por causa da auditoria de execução.
       log.error({ err, queue }, 'falha ao registrar JobExecution');
     }
 
-    // Fase 1: nenhum processamento real ainda. Marca como concluído.
-    const result = { queue, handled: false, note: 'stub — implementação por fase' };
-
-    if (execution) {
-      await prisma.jobExecution
-        .update({
-          where: { id: execution.id },
-          data: { status: 'COMPLETED', result, finishedAt: new Date() },
-        })
-        .catch((err) => log.error({ err }, 'falha ao finalizar JobExecution'));
+    try {
+      const result = await handler(job);
+      if (execution) {
+        await prisma.jobExecution
+          .update({
+            where: { id: execution.id },
+            data: { status: 'COMPLETED', result: result as object, finishedAt: new Date() },
+          })
+          .catch((err) => log.error({ err }, 'falha ao finalizar JobExecution'));
+      }
+      log.info({ queue, jobId: job.id }, 'job concluído');
+      return result;
+    } catch (err) {
+      if (execution) {
+        await prisma.jobExecution
+          .update({
+            where: { id: execution.id },
+            data: {
+              status: 'FAILED',
+              error: (err as Error).message,
+              finishedAt: new Date(),
+            },
+          })
+          .catch(() => {});
+      }
+      log.error({ err, queue, jobId: job.id }, 'job falhou');
+      throw err;
     }
-
-    log.info({ queue, jobId: job.id }, 'job concluído (stub)');
-    return result;
   };
 }
+
+// Compat: mantém o nome anterior usado pelo worker.ts.
+export const makeStubProcessor = makeProcessor;
