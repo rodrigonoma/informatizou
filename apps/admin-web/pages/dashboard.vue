@@ -8,8 +8,8 @@ const auth = useAuthStore();
 const config = useRuntimeConfig();
 const router = useRouter();
 
-// Busca o usuário atual via vue-query (valida o token contra /auth/me).
-const { data: me, isLoading, isError } = useQuery({
+// Valida o token contra /auth/me (redireciona ao login se inválido).
+const { isLoading, isError } = useQuery({
   queryKey: ['me'],
   queryFn: () =>
     $fetch<PublicUser>('/auth/me', {
@@ -26,11 +26,6 @@ watch(isError, (v) => {
   }
 });
 
-async function handleLogout() {
-  await auth.logout();
-  await router.push('/login');
-}
-
 // Cartões placeholder do dashboard (métricas reais chegam nas fases seguintes).
 const stats = [
   { label: 'Empresas encontradas', value: '—', hint: 'Fase 2' },
@@ -42,31 +37,7 @@ const stats = [
 
 <template>
   <div class="min-h-screen">
-    <header class="border-b border-slate-200 bg-white">
-      <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div class="flex items-center gap-2">
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-            I
-          </div>
-          <span class="font-semibold">Informatizou</span>
-          <span class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Painel</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <span class="text-sm text-slate-600">
-            {{ me?.name ?? auth.user?.name ?? '—' }}
-            <span class="ml-1 rounded bg-brand-50 px-1.5 py-0.5 text-xs text-brand-700">
-              {{ me?.role ?? auth.user?.role }}
-            </span>
-          </span>
-          <button
-            class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            @click="handleLogout"
-          >
-            Sair
-          </button>
-        </div>
-      </div>
-    </header>
+    <AppHeader />
 
     <main class="mx-auto max-w-6xl px-6 py-8">
       <h1 class="text-xl font-semibold tracking-tight">Visão geral</h1>
