@@ -15,6 +15,8 @@ const nav = [
   { to: '/leads', label: 'Leads' },
   { to: '/demos', label: 'Demos' },
   { to: '/outreach', label: 'Prospecção' },
+  { to: '/proposals', label: 'Propostas' },
+  { to: '/customers', label: 'Clientes' },
 ];
 </script>
 

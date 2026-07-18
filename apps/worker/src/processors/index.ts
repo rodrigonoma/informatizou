@@ -12,6 +12,7 @@ import { screenshotGenerationHandler } from './screenshot-generation.js';
 import { outreachGenerationHandler } from './outreach-generation.js';
 import { outreachDeliveryHandler } from './outreach-delivery.js';
 import { outreachResponseHandler } from './outreach-response.js';
+import { proposalGenerationHandler } from './proposal-generation.js';
 
 const baseLogger = createLogger({ name: 'worker' });
 
@@ -34,6 +35,7 @@ const HANDLERS: Partial<Record<QueueName, JobHandler>> = {
   [QUEUE_NAMES.OUTREACH_MESSAGE_GENERATION]: outreachGenerationHandler,
   [QUEUE_NAMES.OUTREACH_DELIVERY]: outreachDeliveryHandler,
   [QUEUE_NAMES.OUTREACH_RESPONSE_PROCESSING]: outreachResponseHandler,
+  [QUEUE_NAMES.PROPOSAL_GENERATION]: proposalGenerationHandler,
 };
 
 /**

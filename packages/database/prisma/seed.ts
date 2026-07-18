@@ -32,6 +32,47 @@ async function seedUsers(): Promise<void> {
   log.info({ count: DEV_USERS.length }, 'usuários de desenvolvimento criados/atualizados');
 }
 
+async function seedPlans(): Promise<void> {
+  const plans = [
+    {
+      key: 'Implantação de Site',
+      type: 'ONE_TIME' as const,
+      description: 'Criação do site, domínio, formulário, WhatsApp, mapa, SEO básico e configuração inicial.',
+      features: ['Criação do site', 'Domínio', 'Formulário', 'WhatsApp', 'Mapa', 'SEO básico', 'Analytics'],
+      priceCents: 150000,
+    },
+    {
+      key: 'Manutenção Essencial',
+      type: 'MONTHLY' as const,
+      description: 'Hospedagem, SSL, backups, pequenas alterações, monitoramento e suporte.',
+      features: ['Hospedagem', 'SSL', 'Backups', 'Pequenas alterações', 'Monitoramento', 'Suporte'],
+      priceCents: 9900,
+    },
+    {
+      key: 'Manutenção Plus',
+      type: 'MONTHLY' as const,
+      description: 'Tudo do Essencial, com atualizações prioritárias, relatórios e segurança reforçada.',
+      features: ['Tudo do Essencial', 'Atualizações prioritárias', 'Relatórios mensais', 'Segurança reforçada'],
+      priceCents: 19900,
+    },
+  ];
+  for (const p of plans) {
+    const existing = await prisma.productPlan.findFirst({ where: { name: p.key } });
+    if (!existing) {
+      await prisma.productPlan.create({
+        data: {
+          name: p.key,
+          type: p.type,
+          description: p.description,
+          features: p.features,
+          priceCents: p.priceCents,
+        },
+      });
+    }
+  }
+  log.info({ count: plans.length }, 'planos de exemplo criados/verificados');
+}
+
 async function seedCampaign(): Promise<string> {
   const existing = await prisma.searchCampaign.findFirst({
     where: { name: 'Padarias sem site em Ribeirão Preto (DEV)' },
@@ -178,6 +219,7 @@ async function seedBusinesses(campaignId: string): Promise<void> {
 async function main(): Promise<void> {
   log.warn('Executando seed com CREDENCIAIS DE DESENVOLVIMENTO INSEGURAS — não usar em produção.');
   await seedUsers();
+  await seedPlans();
   const campaignId = await seedCampaign();
   await seedBusinesses(campaignId);
   log.info('seed concluído com sucesso');
