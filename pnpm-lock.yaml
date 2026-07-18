@@ -146,6 +146,28 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(terser@5.49.0)
 
+  apps/demo-renderer:
+    dependencies:
+      vue:
+        specifier: ^3.5.13
+        version: 3.5.40(typescript@5.9.3)
+      vue-router:
+        specifier: ^4.5.0
+        version: 4.6.4(vue@3.5.40(typescript@5.9.3))
+    devDependencies:
+      '@nuxtjs/tailwindcss':
+        specifier: ^6.12.2
+        version: 6.14.0(magicast@0.5.3)(tsx@4.23.1)(yaml@2.9.0)
+      nuxt:
+        specifier: ^3.15.0
+        version: 3.21.8(@parcel/watcher@2.5.6)(@types/node@22.20.1)(@vue/compiler-sfc@3.5.40)(cac@6.7.14)(db0@0.3.4)(esbuild@0.28.1)(eslint@9.39.5(jiti@2.7.0))(ioredis@5.11.1)(optionator@0.9.4)(rollup-plugin-visualizer@7.0.1(rollup@4.62.2))(rollup@4.62.2)(terser@5.49.0)(tsx@4.23.1)(typescript@5.9.3)(vite@5.4.21(@types/node@22.20.1)(terser@5.49.0))(vue-tsc@2.2.12(typescript@5.9.3))(xml2js@0.6.2)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vue-tsc:
+        specifier: ^2.2.0
+        version: 2.2.12(typescript@5.9.3)
+
   apps/public-web:
     dependencies:
       vue:
