@@ -1,0 +1,282 @@
+/* ============================================================================
+   INFORMATIZOU MOTION SYSTEM
+   Tela viva, monocromática, com um único sinal âmbar (#FF5D3B).
+   Princípios: silêncio visual, tipografia protagonista, movimento com intenção.
+   ========================================================================== */
+
+:root {
+  --bg: #0a0a0b;
+  --bg-2: #0e0e11;
+  --ink: #ede8dd;
+  --ink-dim: rgba(237, 232, 221, 0.56);
+  --ink-faint: rgba(237, 232, 221, 0.3);
+  --ink-ghost: rgba(237, 232, 221, 0.12);
+  --line: rgba(237, 232, 221, 0.1);
+  --signal: #ff5d3b;
+  --signal-2: #ff8a3d;
+  --signal-soft: rgba(255, 93, 59, 0.16);
+
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Curvas de mola do sistema. */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --edge: clamp(1.25rem, 4.5vw, 4.5rem);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--signal);
+  color: #0a0a0b;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* -- Ambiente: grão + sinal que segue o cursor ---------------------------- */
+
+.env-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.env-signal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 60vmax;
+  height: 60vmax;
+  margin: -30vmax 0 0 -30vmax;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--signal-soft) 0%,
+    rgba(255, 93, 59, 0.05) 34%,
+    transparent 62%
+  );
+  mix-blend-mode: screen;
+  transform: translate3d(50vw, 40vh, 0);
+  will-change: transform;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+.env-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* -- Cursor personalizado (ponteiro fino) --------------------------------- */
+
+.env-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid var(--ink-faint);
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  transform: translate3d(-100px, -100px, 0);
+  transition:
+    width 0.35s var(--ease-spring),
+    height 0.35s var(--ease-spring),
+    margin 0.35s var(--ease-spring),
+    border-color 0.35s var(--ease-out),
+    opacity 0.4s var(--ease-out);
+}
+.env-cursor.is-active {
+  width: 66px;
+  height: 66px;
+  margin: -33px 0 0 -33px;
+  border-color: var(--signal);
+}
+.env-cursor.is-down {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+}
+
+/* -- Primitivas de movimento ---------------------------------------------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(6px);
+  transition:
+    opacity 1s var(--ease-out),
+    transform 1.1s var(--ease-spring),
+    filter 1s var(--ease-out);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Revelação por máscara (linhas de texto que sobem por baixo de uma borda).
+   O padding + margem negativa ampliam a área de clip para não cortar
+   ascendentes/descendentes nem a inclinação do itálico. */
+.mask-line {
+  display: block;
+  overflow: hidden;
+  padding: 0.16em 0.24em;
+  margin: -0.16em -0.24em;
+}
+.mask-line > span {
+  display: block;
+  transform: translateY(112%);
+  transition: transform 1.15s var(--ease-spring);
+}
+.mask-line.in > span {
+  transform: translateY(0);
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.014);
+    opacity: 0.9;
+  }
+}
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes scroll-hint {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  40% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  60% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+.breathe {
+  animation: breathe 7s var(--ease-out) infinite;
+}
+.float-slow {
+  animation: float-slow 9s var(--ease-out) infinite;
+}
+
+/* -- HUD / anotações monoespaçadas (sensação de software) ----------------- */
+
+.hud {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.hud-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: pulse-dot 2.4s var(--ease-out) infinite;
+}
+
+/* -- Acessibilidade: respeitar quem prefere menos movimento --------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal,
+  .mask-line > span {
+    transition: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .breathe,
+  .float-slow,
+  .hud-dot {
+    animation: none;
+  }
+  .env-signal,
+  .env-cursor {
+    display: none;
+  }
+}
+
+/* Ponteiros grosseiros (toque): sem cursor custom. */
+@media (hover: none), (pointer: coarse) {
+  .env-cursor {
+    display: none;
+  }
+  body {
+    cursor: auto;
+  }
+}
