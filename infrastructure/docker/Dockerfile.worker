@@ -1,0 +1,15 @@
+# Imagem do worker com Playwright/Chromium para screenshots (spec §22).
+FROM node:22-slim AS base
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+RUN corepack enable
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @informatizou/database db:generate
+# Instala o Chromium + dependências de sistema do Playwright (roda como root no build).
+RUN pnpm --filter @informatizou/worker exec playwright install --with-deps chromium
+
+CMD ["pnpm", "--filter", "@informatizou/worker", "start"]
