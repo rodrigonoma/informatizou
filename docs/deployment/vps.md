@@ -2,6 +2,32 @@
 
 Guia para publicar o Informatizou Prospect em uma VPS Linux (Ubuntu LTS).
 
+> ## Deploy realizado (VPS 72.60.63.64 — compartilhada)
+>
+> Esta VPS **hospeda outros sites de produção** (flowra/voicenav/cobrio). Por isso o
+> deploy foi feito de forma **isolada** com [`docker-compose.vps.yml`](../../docker-compose.vps.yml):
+> containers próprios (postgres/redis/minio internos), **sem nginx/certbot** e **sem publicar
+> portas conflitantes** — os apps ficam em `127.0.0.1:18030` (public), `18031` (admin),
+> `18032` (demo), `18040` (api). O nginx do host roteará os subdomínios via
+> [`infrastructure/nginx/host-informatizou.conf`](../../infrastructure/nginx/host-informatizou.conf)
+> **após o DNS apontar**.
+>
+> Passos usados:
+> ```bash
+> # instalar docker compose v2 (binário) se ausente
+> mkdir -p /usr/local/lib/docker/cli-plugins
+> curl -fsSL https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-x86_64 \
+>   -o /usr/local/lib/docker/cli-plugins/docker-compose && chmod +x $_
+> # enviar o código (rsync, sem .git/node_modules/.env)
+> # criar /opt/informatizou/.env com segredos fortes (openssl rand -hex)
+> cd /opt/informatizou && docker compose -f docker-compose.vps.yml up -d --build
+> ```
+> Quando o DNS de informatizou.com.br apontar para a VPS, ativar o nginx do host +
+> SSL conforme o cabeçalho de `host-informatizou.conf`.
+
+---
+
+
 ## 1. Pré-requisitos na VPS
 
 ```bash
