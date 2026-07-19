@@ -11,6 +11,12 @@ export {
   parseCsv,
 } from './csv-provider.js';
 export {
+  GooglePlacesBusinessSearchProvider,
+  normalizeGooglePlace,
+  type GooglePlacesProviderOptions,
+  type FetchLike,
+} from './google-places-provider.js';
+export {
   getSearchProvider,
   SearchProviderNotConfiguredError,
   type SearchProviderConfig,

@@ -56,6 +56,10 @@ export interface BusinessSearchResult {
   query: BusinessSearchInput;
   results: NormalizedBusinessResult[];
   totalFound: number;
+  /** Nº de chamadas de rede feitas ao provider (para custo/uso). Opcional. */
+  requestCount?: number;
+  /** Custo estimado em centavos (para providers pagos). Opcional. */
+  estimatedCostCents?: number;
 }
 
 /** Detalhes de empresa (spec §7). */

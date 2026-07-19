@@ -2,6 +2,7 @@ import type { Job } from 'bullmq';
 import { prisma } from '@informatizou/database';
 import { getSearchProvider } from '@informatizou/search-providers';
 import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
+import { loadEnv } from '@informatizou/config';
 import { createLogger, withCorrelation } from '@informatizou/logging';
 import { persistNormalizedBusiness } from './ingest.js';
 
@@ -33,9 +34,11 @@ export async function businessSearchHandler(job: Job): Promise<unknown> {
   await prisma.searchCampaign.update({ where: { id: campaignId }, data: { status: 'RUNNING' } });
   log.info({ provider: campaign.provider }, 'iniciando busca de empresas');
 
+  const env = loadEnv();
   const provider = getSearchProvider({
     provider: campaign.provider,
     csvContent: job.data?.csvContent as string | undefined,
+    googlePlacesApiKey: env.GOOGLE_PLACES_API_KEY || undefined,
   });
 
   const searchResult = await provider.search({
@@ -79,7 +82,7 @@ export async function businessSearchHandler(job: Job): Promise<unknown> {
       provider: provider.name,
       operation: 'search',
       quantity: searchResult.results.length,
-      estimatedCostCents: 0,
+      estimatedCostCents: searchResult.estimatedCostCents ?? 0,
     },
   });
   await prisma.providerUsage.create({
@@ -87,8 +90,8 @@ export async function businessSearchHandler(job: Job): Promise<unknown> {
       campaignId,
       provider: provider.name,
       operation: 'search',
-      requestCount: 1,
-      estimatedCostCents: 0,
+      requestCount: searchResult.requestCount ?? 1,
+      estimatedCostCents: searchResult.estimatedCostCents ?? 0,
     },
   });
 
