@@ -1,64 +1,56 @@
 /* ============================================================================
-   INFORMATIZOU — Apple Human Interface
-   Princípios: Clareza, Deferência, Profundidade.
-   Tipografia do sistema (SF Pro no ecossistema Apple), muito ar, azul de ação.
+   InformatizouOS — o portfólio da Informatizou como um sistema operacional.
+   Área de trabalho escura com neons da marca; janelas de vidro claras.
    ========================================================================== */
 
 :root {
-  --bg: #ffffff;
-  --bg-alt: #f5f5f7; /* cinza-Apple das seções */
-  --ink: #1d1d1f; /* texto primário quase-preto */
-  --ink-2: #6e6e73; /* texto secundário */
-  --ink-3: #86868b; /* legendas / rodapé */
-  --hair: rgba(0, 0, 0, 0.1);
-  --blue: #0071e3; /* azul de ação (botões) */
-  --blue-hover: #0077ed;
-  --link: #0066cc; /* azul de link */
-  --dark: #000000; /* tiles escuros */
-  --dark-2: #1d1d1f;
-  --on-dark: #f5f5f7;
-  --on-dark-2: #a1a1a6;
-  --link-on-dark: #2997ff;
-
-  --radius-pill: 980px;
-  --radius-card: 22px;
-  --radius-sm: 14px;
-  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.08);
-  --shadow-lift: 0 18px 50px rgba(0, 0, 0, 0.14);
-
-  --nav-h: 48px;
-  --edge: clamp(1.25rem, 5vw, 2.5rem);
-  --maxw: 1024px;
-  --maxw-wide: 1220px;
-
-  --ease: cubic-bezier(0.28, 0.11, 0.32, 1);
-
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
     'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+
+  /* Área de trabalho */
+  --desk-1: #0a0a12;
+  --desk-2: #12101d;
+
+  /* Cromática neon da marca */
+  --n-orange: #ff6a3d;
+  --n-pink: #ff3d8b;
+  --n-purple: #a855f7;
+  --n-blue: #3b9dff;
+  --n-cyan: #22d3ee;
+  --n-green: #34c759;
+
+  /* Janelas (vidro claro) */
+  --win-bg: rgba(250, 250, 252, 0.9);
+  --win-head: rgba(245, 245, 248, 0.9);
+  --win-ink: #1d1d1f;
+  --win-ink-2: #6b6b73;
+  --win-hair: rgba(0, 0, 0, 0.09);
+  --win-radius: 16px;
+  --win-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Chrome do SO (translúcido escuro) */
+  --bar-bg: rgba(12, 12, 20, 0.5);
+  --bar-ink: #f2f2f5;
+  --glass-line: rgba(255, 255, 255, 0.12);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-  background: var(--bg);
-}
-
+html,
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--ink);
+  height: 100%;
+  background: var(--desk-1);
+  color: var(--bar-ink);
   font-family: var(--font);
-  font-size: 17px;
-  line-height: 1.47;
-  letter-spacing: -0.01em;
-}
-
-::selection {
-  background: rgba(0, 113, 227, 0.16);
+  overflow: hidden; /* a área de trabalho controla o scroll */
+  overscroll-behavior: none;
 }
 
 a {
@@ -67,153 +59,48 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(0, 113, 227, 0.5);
-  outline-offset: 3px;
+  outline: 2px solid var(--n-blue);
+  outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* -- Layout ---------------------------------------------------------------- */
-
-.container {
-  width: 100%;
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--edge);
-}
-.container-wide {
-  max-width: var(--maxw-wide);
-}
-
-/* -- Escala tipográfica (estilo Apple) ------------------------------------ */
-
-.eyebrow {
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--blue);
-  margin: 0 0 0.6rem;
-}
-
-.h1 {
-  font-size: clamp(2.5rem, 6.2vw, 4.5rem);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -0.018em;
-  margin: 0;
-}
-.h2 {
-  font-size: clamp(1.9rem, 4.6vw, 3.25rem);
-  font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.014em;
-  margin: 0;
-}
-.h3 {
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
-  margin: 0;
-}
-.sub {
-  font-size: clamp(1.15rem, 2vw, 1.6rem);
-  font-weight: 400;
-  line-height: 1.38;
-  letter-spacing: -0.008em;
-  color: var(--ink-2);
-  margin: 0;
-}
-.lead {
-  font-size: 1.1875rem;
-  line-height: 1.5;
-  color: var(--ink-2);
-}
-
-/* -- Ações ----------------------------------------------------------------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.75rem 1.35rem;
-  font-size: 1.0625rem;
-  font-weight: 400;
-  border-radius: var(--radius-pill);
-  background: var(--blue);
-  color: #fff;
-  border: 1px solid transparent;
+button {
+  font: inherit;
   cursor: pointer;
-  transition:
-    background 0.22s var(--ease),
-    transform 0.22s var(--ease);
-}
-.btn:hover {
-  background: var(--blue-hover);
-}
-.btn:active {
-  transform: scale(0.98);
-}
-.btn-ghost {
-  background: transparent;
-  color: var(--blue);
-  border-color: rgba(0, 113, 227, 0.4);
-}
-.btn-ghost:hover {
-  background: rgba(0, 113, 227, 0.06);
+  border: none;
+  background: none;
+  color: inherit;
 }
 
-/* Link azul com chevron (padrão Apple "Saiba mais ›") */
-.link-blue {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  color: var(--link);
-  font-size: 1.0625rem;
-  transition: opacity 0.2s var(--ease);
+/* Barra de rolagem discreta dentro das janelas */
+.os-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
 }
-.link-blue .chev {
-  transition: transform 0.24s var(--ease);
+.os-scroll::-webkit-scrollbar {
+  width: 10px;
 }
-.link-blue:hover {
-  text-decoration: none;
-  opacity: 0.85;
-}
-.link-blue:hover .chev {
-  transform: translateX(3px);
+.os-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
-/* -- Seções ---------------------------------------------------------------- */
-
-.section {
-  padding: clamp(4.5rem, 12vh, 8.5rem) 0;
-}
-.section-alt {
-  background: var(--bg-alt);
-}
-
-/* -- Motion: revelações sutis (fade + subida) ----------------------------- */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(26px);
-  transition:
-    opacity 0.9s var(--ease),
-    transform 0.9s var(--ease);
-  will-change: opacity, transform;
-}
-.reveal.in {
-  opacity: 1;
-  transform: none;
+@keyframes win-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  .reveal {
-    transition: none;
-    opacity: 1;
-    transform: none;
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
   }
 }

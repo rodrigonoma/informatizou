@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
-      title: 'Informatizou — Sites profissionais, sem complicação',
+      title: 'Informatizou — tudo para digitalizar o seu negócio',
       htmlAttrs: { lang: 'pt-BR' },
       meta: [
         { charset: 'utf-8' },
@@ -17,11 +17,11 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'A Informatizou cria, hospeda e mantém sites profissionais para o seu negócio. Você recebe uma demonstração antes de decidir. Simples assim.',
+            'Informatizou: sites profissionais, chatbot no WhatsApp, e-mail corporativo, hospedagem, manutenção e loja online. Tudo para digitalizar o seu negócio — com demonstração antes de decidir.',
         },
-        { name: 'theme-color', content: '#ffffff' },
+        { name: 'theme-color', content: '#0a0a12' },
         { name: 'robots', content: 'index, follow' },
-        { property: 'og:title', content: 'Informatizou — Sites profissionais, sem complicação' },
+        { property: 'og:title', content: 'Informatizou — tudo para digitalizar o seu negócio' },
         {
           property: 'og:description',
           content: 'Criação, hospedagem e manutenção de sites. Veja uma demonstração antes de decidir.',
