@@ -11,6 +11,8 @@ export default defineNuxtConfig({
     public: {
       // API pública (o painel do cliente chama estes endpoints no navegador).
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:4000',
+      // Client ID do Google (login social). Vazio = botão do Google oculto.
+      googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
     },
   },
   app: {

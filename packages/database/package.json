@@ -16,6 +16,8 @@
     "db:reset": "dotenv -e ../../.env -- prisma migrate reset --force",
     "db:seed": "dotenv -e ../../.env -- prisma db seed",
     "db:seed:raw": "prisma db seed",
+    "db:ensure-admin": "dotenv -e ../../.env -- tsx prisma/ensure-admin.ts",
+    "db:ensure-admin:raw": "tsx prisma/ensure-admin.ts",
     "db:studio": "dotenv -e ../../.env -- prisma studio",
     "db:format": "prisma format",
     "db:validate": "prisma validate"

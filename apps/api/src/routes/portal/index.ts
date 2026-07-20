@@ -1,7 +1,8 @@
-import type { FastifyInstance, FastifyReply } from 'fastify';
-import { createHash } from 'node:crypto';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { OAuth2Client } from 'google-auth-library';
 import { loadEnv } from '@informatizou/config';
 import {
   hashPassword,
@@ -10,16 +11,34 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from '@informatizou/auth';
-import { getWhatsAppProvider } from '@informatizou/providers';
+import { getWhatsAppProvider, getEmailProvider } from '@informatizou/providers';
 import type { Customer } from '@informatizou/database';
 import { apiEnv } from '../../config.js';
 import { botConfigFields, buildBotConfigData } from '../whatsapp/config-shared.js';
 
 const REFRESH_COOKIE = 'portal_refresh';
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
+const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
 
 function sha256(v: string): string {
   return createHash('sha256').update(v).digest('hex');
+}
+
+/** HTML do e-mail de redefinição de senha do painel. */
+function resetEmailHtml(name: string, link: string): string {
+  return `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1a1a1a">
+    <h2 style="color: #000080">Redefinição de senha</h2>
+    <p>Olá, ${name.split(' ')[0] || name}!</p>
+    <p>Recebemos um pedido para redefinir a senha do seu Painel Informatizou.
+       Clique no botão abaixo para criar uma nova senha (o link expira em 1 hora):</p>
+    <p style="text-align: center; margin: 28px 0">
+      <a href="${link}" style="background: #000080; color: #fff; text-decoration: none;
+         padding: 12px 22px; border-radius: 8px; font-weight: bold">Redefinir minha senha</a>
+    </p>
+    <p style="font-size: 13px; color: #555">Se você não fez este pedido, ignore este e-mail — sua senha continua a mesma.</p>
+    <p style="font-size: 12px; color: #888">Ou copie e cole este endereço: ${link}</p>
+  </div>`;
 }
 
 function setRefreshCookie(reply: FastifyReply, token: string): void {
@@ -57,6 +76,34 @@ export async function portalRoutes(app: FastifyInstance): Promise<void> {
 
   const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
+  // Cria a sessão (refresh httpOnly) e devolve o access token do painel.
+  async function startSession(
+    customer: Customer,
+    req: FastifyRequest,
+    reply: FastifyReply,
+  ): Promise<string> {
+    const session = await p.customerSession.create({
+      data: {
+        customerId: customer.id,
+        refreshTokenHash: '',
+        expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+        ip: req.ip,
+        userAgent: req.headers['user-agent'] ?? null,
+      },
+    });
+    const accessToken = signPortalToken(
+      { sub: customer.id, email: customer.portalEmail! },
+      env.JWT_SECRET,
+    );
+    const refreshToken = signRefreshToken({ sub: customer.id, sid: session.id }, env.JWT_REFRESH_SECRET);
+    await p.customerSession.update({
+      where: { id: session.id },
+      data: { refreshTokenHash: sha256(refreshToken) },
+    });
+    setRefreshCookie(reply, refreshToken);
+    return accessToken;
+  }
+
   // POST /portal/auth/login
   r.post(
     '/auth/login',
@@ -72,32 +119,172 @@ export async function portalRoutes(app: FastifyInstance): Promise<void> {
         app.log.warn({ email }, 'login do painel falhou');
         return reply.code(401).send({ error: 'Unauthorized', message: 'credenciais inválidas' });
       }
-
-      const session = await p.customerSession.create({
-        data: {
-          customerId: customer.id,
-          refreshTokenHash: '',
-          expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
-          ip: req.ip,
-          userAgent: req.headers['user-agent'] ?? null,
-        },
-      });
-      const accessToken = signPortalToken(
-        { sub: customer.id, email: customer.portalEmail! },
-        env.JWT_SECRET,
-      );
-      const refreshToken = signRefreshToken({ sub: customer.id, sid: session.id }, env.JWT_REFRESH_SECRET);
-      await p.customerSession.update({
-        where: { id: session.id },
-        data: { refreshTokenHash: sha256(refreshToken) },
-      });
+      const accessToken = await startSession(customer, req, reply);
       const updated = await p.customer.update({
         where: { id: customer.id },
         data: { lastPortalLoginAt: new Date() },
       });
-
-      setRefreshCookie(reply, refreshToken);
       return { accessToken, customer: toPublicCustomer(updated) };
+    },
+  );
+
+  // POST /portal/auth/register — o próprio negócio cria a conta do painel.
+  r.post(
+    '/auth/register',
+    {
+      schema: {
+        tags: ['portal'],
+        summary: 'Cria uma conta no painel do cliente',
+        body: z.object({
+          name: z.string().min(2),
+          email: z.string().email(),
+          password: z.string().min(8),
+        }),
+      },
+    },
+    async (req, reply) => {
+      const email = req.body.email.trim().toLowerCase();
+      const existing = await p.customer.findUnique({ where: { portalEmail: email } });
+      if (existing) {
+        return reply.code(409).send({ error: 'Conflict', message: 'Já existe uma conta com este e-mail.' });
+      }
+      const passwordHash = await hashPassword(req.body.password);
+      const customer = await p.customer.create({
+        data: {
+          name: req.body.name.trim(),
+          email,
+          portalEmail: email,
+          passwordHash,
+          lastPortalLoginAt: new Date(),
+        },
+      });
+      const accessToken = await startSession(customer, req, reply);
+      return reply.code(201).send({ accessToken, customer: toPublicCustomer(customer) });
+    },
+  );
+
+  // POST /portal/auth/google — login social (Google Identity Services).
+  r.post(
+    '/auth/google',
+    {
+      schema: {
+        tags: ['portal'],
+        summary: 'Login com Google',
+        body: z.object({ credential: z.string().min(10) }),
+      },
+    },
+    async (req, reply) => {
+      const clientId = env.GOOGLE_OAUTH_CLIENT_ID;
+      if (!clientId) {
+        return reply.code(400).send({ error: 'Bad Request', message: 'Login com Google não está configurado.' });
+      }
+      const client = new OAuth2Client(clientId);
+      let payload;
+      try {
+        const ticket = await client.verifyIdToken({ idToken: req.body.credential, audience: clientId });
+        payload = ticket.getPayload();
+      } catch {
+        return reply.code(401).send({ error: 'Unauthorized', message: 'Não foi possível validar o login do Google.' });
+      }
+      if (!payload?.email || payload.email_verified === false) {
+        return reply.code(401).send({ error: 'Unauthorized', message: 'Conta Google sem e-mail verificado.' });
+      }
+      const email = payload.email.trim().toLowerCase();
+      let customer = await p.customer.findUnique({ where: { portalEmail: email } });
+      if (customer?.deletedAt) {
+        return reply.code(401).send({ error: 'Unauthorized', message: 'conta indisponível' });
+      }
+      if (!customer) {
+        customer = await p.customer.create({
+          data: { name: payload.name ?? email, email, portalEmail: email, lastPortalLoginAt: new Date() },
+        });
+      } else {
+        customer = await p.customer.update({
+          where: { id: customer.id },
+          data: { lastPortalLoginAt: new Date() },
+        });
+      }
+      const accessToken = await startSession(customer, req, reply);
+      return { accessToken, customer: toPublicCustomer(customer) };
+    },
+  );
+
+  // POST /portal/auth/forgot — envia link de redefinição (resposta neutra).
+  r.post(
+    '/auth/forgot',
+    {
+      schema: {
+        tags: ['portal'],
+        summary: 'Solicita redefinição de senha',
+        body: z.object({ email: z.string().email() }),
+      },
+    },
+    async (req) => {
+      const email = req.body.email.trim().toLowerCase();
+      const customer = await p.customer.findUnique({ where: { portalEmail: email } });
+      // Sempre responde 200 — não revela se o e-mail existe (anti-enumeração).
+      if (!customer || customer.deletedAt) return { ok: true };
+
+      const rawToken = randomBytes(32).toString('hex');
+      await p.portalPasswordReset.create({
+        data: {
+          customerId: customer.id,
+          tokenHash: sha256(rawToken),
+          expiresAt: new Date(Date.now() + RESET_TTL_MS),
+        },
+      });
+      const link = `${env.APP_BASE_URL.replace(/\/$/, '')}/painel/redefinir?token=${rawToken}`;
+      const provider = getEmailProvider({
+        EMAIL_PROVIDER: env.EMAIL_PROVIDER,
+        ENABLE_EMAIL_DELIVERY: env.ENABLE_EMAIL_DELIVERY,
+        SMTP_HOST: env.SMTP_HOST,
+        SMTP_PORT: env.SMTP_PORT,
+        SMTP_USER: env.SMTP_USER,
+        SMTP_PASSWORD: env.SMTP_PASSWORD,
+        SMTP_FROM_NAME: env.SMTP_FROM_NAME,
+        SMTP_FROM_EMAIL: env.SMTP_FROM_EMAIL,
+      });
+      try {
+        await provider.send({
+          to: email,
+          subject: 'Redefinição de senha — Painel Informatizou',
+          html: resetEmailHtml(customer.name, link),
+          text: `Para redefinir a senha do seu painel, acesse: ${link}`,
+        });
+      } catch (err) {
+        req.log.warn({ err: (err as Error).message }, 'não foi possível enviar e-mail de redefinição');
+      }
+      // Em dev/homologação (sem SMTP), devolve o link para facilitar o teste.
+      return env.NODE_ENV === 'production' ? { ok: true } : { ok: true, devLink: link };
+    },
+  );
+
+  // POST /portal/auth/reset — define nova senha com o token do e-mail.
+  r.post(
+    '/auth/reset',
+    {
+      schema: {
+        tags: ['portal'],
+        summary: 'Redefine a senha com o token',
+        body: z.object({ token: z.string().min(10), password: z.string().min(8) }),
+      },
+    },
+    async (req, reply) => {
+      const reset = await p.portalPasswordReset.findUnique({
+        where: { tokenHash: sha256(req.body.token) },
+      });
+      if (!reset || reset.usedAt || reset.expiresAt.getTime() < Date.now()) {
+        return reply.code(400).send({ error: 'Bad Request', message: 'Link inválido ou expirado.' });
+      }
+      const passwordHash = await hashPassword(req.body.password);
+      await p.customer.update({ where: { id: reset.customerId }, data: { passwordHash } });
+      await p.portalPasswordReset.update({ where: { id: reset.id }, data: { usedAt: new Date() } });
+      // Revoga sessões existentes por segurança.
+      await p.customerSession.updateMany({
+        where: { customerId: reset.customerId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      return { ok: true };
     },
   );
 

@@ -984,8 +984,23 @@ model Customer {
   proposals       Proposal[]
   whatsappConfigs WhatsappBotConfig[]
   portalSessions  CustomerSession[]
+  passwordResets  PortalPasswordReset[]
 
   @@index([deletedAt])
+}
+
+/** Pedido de redefinição de senha do painel (token de uso único, com expiração). */
+model PortalPasswordReset {
+  id         String    @id @default(cuid())
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId])
 }
 
 /** Sessão do painel do cliente (refresh token httpOnly, para revogação). */

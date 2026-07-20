@@ -77,6 +77,40 @@ export function usePortal() {
     customer.value = res.customer;
   }
 
+  async function register(name: string, email: string, password: string): Promise<void> {
+    const res = await $fetch<LoginResponse>('/portal/auth/register', {
+      baseURL: base,
+      method: 'POST',
+      credentials: 'include',
+      body: { name, email, password },
+    });
+    token.value = res.accessToken;
+    customer.value = res.customer;
+  }
+
+  async function loginWithGoogle(credential: string): Promise<void> {
+    const res = await $fetch<LoginResponse>('/portal/auth/google', {
+      baseURL: base,
+      method: 'POST',
+      credentials: 'include',
+      body: { credential },
+    });
+    token.value = res.accessToken;
+    customer.value = res.customer;
+  }
+
+  function forgot(email: string): Promise<{ ok: boolean; devLink?: string }> {
+    return $fetch('/portal/auth/forgot', { baseURL: base, method: 'POST', body: { email } });
+  }
+
+  function resetPassword(resetToken: string, password: string): Promise<{ ok: boolean }> {
+    return $fetch('/portal/auth/reset', {
+      baseURL: base,
+      method: 'POST',
+      body: { token: resetToken, password },
+    });
+  }
+
   async function fetchMe(): Promise<boolean> {
     if (!token.value) {
       if (!(await tryRefresh())) return false;
@@ -99,5 +133,5 @@ export function usePortal() {
     customer.value = null;
   }
 
-  return { token, customer, api, login, logout, fetchMe };
+  return { token, customer, api, login, register, loginWithGoogle, forgot, resetPassword, logout, fetchMe };
 }

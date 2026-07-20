@@ -7,8 +7,10 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex, nofollow' }],
 });
 
-const { login, token } = usePortal();
+const { login, loginWithGoogle, token } = usePortal();
 const router = useRouter();
+const config = useRuntimeConfig();
+const googleClientId = config.public.googleClientId as string;
 
 const email = ref('');
 const password = ref('');
@@ -33,6 +35,23 @@ async function submit() {
     loading.value = false;
   }
 }
+
+async function onGoogle(credential: string) {
+  error.value = '';
+  loading.value = true;
+  try {
+    await loginWithGoogle(credential);
+    await router.replace('/painel');
+  } catch {
+    error.value = 'Não foi possível entrar com o Google.';
+  } finally {
+    loading.value = false;
+  }
+}
+
+function close() {
+  router.push('/');
+}
 </script>
 
 <template>
@@ -43,7 +62,7 @@ async function submit() {
           <img src="/logo-mark.png" alt="" width="16" height="16" style="image-rendering: pixelated" />
           Informatizou — Acesso ao Painel
         </span>
-        <span class="tb-btns"><span class="tb-x bevel-out">×</span></span>
+        <span class="tb-btns"><button type="button" class="tb-x bevel-out" title="Voltar ao site" @click="close">×</button></span>
       </div>
 
       <div class="win-body">
@@ -75,15 +94,18 @@ async function submit() {
             <button type="submit" class="btn95" :disabled="loading">
               {{ loading ? 'Entrando…' : 'Entrar' }}
             </button>
-            <NuxtLink to="/" class="btn95" style="text-decoration: none; display: inline-flex; align-items: center">
-              Voltar ao site
-            </NuxtLink>
+            <NuxtLink to="/painel/esqueci" class="link">Esqueci minha senha</NuxtLink>
           </div>
         </form>
 
+        <template v-if="googleClientId">
+          <div class="sep"><span>ou</span></div>
+          <PortalGoogleSignInButton :client-id="googleClientId" @credential="onGoogle" />
+        </template>
+
         <p class="hint">
-          Ainda não tem acesso? Fale com a Informatizou pelo
-          <NuxtLink to="/">site</NuxtLink> para ativar o seu painel.
+          Ainda não tem uma conta?
+          <NuxtLink to="/painel/criar">Criar conta</NuxtLink>.
         </p>
       </div>
     </div>
@@ -149,8 +171,29 @@ async function submit() {
 }
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
   margin-top: 6px;
+}
+.link {
+  font-size: 12px;
+  color: #0000ee;
+  text-decoration: underline;
+}
+.sep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  color: #505050;
+  font-size: 11px;
+}
+.sep::before,
+.sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--w-shadow);
 }
 .err {
   background: #fff;

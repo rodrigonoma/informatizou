@@ -42,6 +42,9 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET é obrigatório'),
   ENCRYPTION_KEY: z.string().min(1, 'ENCRYPTION_KEY é obrigatório'),
 
+  // Login social do painel do cliente (Google). Vazio = SSO desabilitado.
+  GOOGLE_OAUTH_CLIENT_ID: z.string().default(''),
+
   AI_PROVIDER: z.enum(['anthropic', 'openai', 'local', 'disabled']).default('anthropic'),
   ANTHROPIC_API_KEY: z.string().default(''),
   ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),

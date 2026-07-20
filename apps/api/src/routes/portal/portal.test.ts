@@ -10,16 +10,16 @@ import { buildApp } from '../../app.js';
  */
 const PORTAL_EMAIL = 'portal-test@informatizou.test';
 const PORTAL_PASSWORD = 'painel-teste-2026';
+const REGISTER_EMAIL = 'portal-register-test@informatizou.test';
+const RESET_EMAIL = 'portal-reset-test@informatizou.test';
+const ALL_EMAILS = [PORTAL_EMAIL, REGISTER_EMAIL, RESET_EMAIL];
 
 let app: FastifyInstance;
 let customerId: string;
 
 async function cleanup() {
-  const existing = await app.prisma.customer.findUnique({ where: { portalEmail: PORTAL_EMAIL } });
-  if (existing) {
-    await app.prisma.customerSession.deleteMany({ where: { customerId: existing.id } });
-    await app.prisma.customer.delete({ where: { id: existing.id } });
-  }
+  // onDelete: Cascade cuida de sessões e tokens de redefinição.
+  await app.prisma.customer.deleteMany({ where: { portalEmail: { in: ALL_EMAILS } } });
 }
 
 beforeAll(async () => {
@@ -34,6 +34,13 @@ beforeAll(async () => {
     },
   });
   customerId = customer.id;
+  await app.prisma.customer.create({
+    data: {
+      name: 'Cliente Reset (painel)',
+      portalEmail: RESET_EMAIL,
+      passwordHash: await hashPassword('senha-antiga-123'),
+    },
+  });
 });
 
 afterAll(async () => {
@@ -131,5 +138,80 @@ describe('rotas escopadas do painel', () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual([]);
+  });
+});
+
+describe('POST /portal/auth/register', () => {
+  it('cria uma conta nova e retorna token (201)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/register',
+      payload: { name: 'Novo Cliente', email: REGISTER_EMAIL, password: 'senha-nova-123' },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(typeof res.json().accessToken).toBe('string');
+    expect(res.json().customer.portalEmail).toBe(REGISTER_EMAIL);
+  });
+
+  it('rejeita e-mail já cadastrado com 409', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/register',
+      payload: { name: 'Duplicado', email: PORTAL_EMAIL, password: 'outra-senha-123' },
+    });
+    expect(res.statusCode).toBe(409);
+  });
+});
+
+describe('fluxo de redefinição de senha', () => {
+  it('forgot devolve devLink em ambiente de teste e reset troca a senha', async () => {
+    const forgot = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/forgot',
+      payload: { email: RESET_EMAIL },
+    });
+    expect(forgot.statusCode).toBe(200);
+    const devLink = forgot.json().devLink as string;
+    expect(devLink).toContain('/painel/redefinir?token=');
+    const resetToken = new URL(devLink).searchParams.get('token')!;
+
+    const reset = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/reset',
+      payload: { token: resetToken, password: 'senha-nova-456' },
+    });
+    expect(reset.statusCode).toBe(200);
+
+    // A senha antiga não funciona mais; a nova sim.
+    const oldLogin = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/login',
+      payload: { email: RESET_EMAIL, password: 'senha-antiga-123' },
+    });
+    expect(oldLogin.statusCode).toBe(401);
+    const newLogin = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/login',
+      payload: { email: RESET_EMAIL, password: 'senha-nova-456' },
+    });
+    expect(newLogin.statusCode).toBe(200);
+  });
+
+  it('reset com token inválido retorna 400', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/reset',
+      payload: { token: 'token-que-nao-existe-xxxxx', password: 'qualquer-coisa-123' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('forgot para e-mail inexistente ainda responde 200 (anti-enumeração)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/portal/auth/forgot',
+      payload: { email: 'nao-existe@informatizou.test' },
+    });
+    expect(res.statusCode).toBe(200);
   });
 });

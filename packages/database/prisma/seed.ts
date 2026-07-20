@@ -4,6 +4,7 @@ import { hashPassword } from '@informatizou/auth';
 import { createLogger } from '@informatizou/logging';
 import { normalizeName, toE164, classifyEmail, EmailKind } from '@informatizou/shared';
 import { FAKE_BUSINESSES, type FakeScenarioMeta } from '@informatizou/search-providers';
+import { seedOwnerAdmin } from './owner-admin.js';
 
 const log = createLogger({ name: 'seed' });
 
@@ -219,6 +220,7 @@ async function seedBusinesses(campaignId: string): Promise<void> {
 async function main(): Promise<void> {
   log.warn('Executando seed com CREDENCIAIS DE DESENVOLVIMENTO INSEGURAS — não usar em produção.');
   await seedUsers();
+  await seedOwnerAdmin();
   await seedPlans();
   const campaignId = await seedCampaign();
   await seedBusinesses(campaignId);
