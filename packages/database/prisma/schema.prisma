@@ -1181,6 +1181,9 @@ model WhatsappBotConfig {
   phoneNumberId   String    @unique
   customerId      String?
   customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  // Credencial de envio deste número (multi-cliente). Vazio = usa o token global do .env.
+  accessToken     String?   @db.Text
+  wabaId          String?
   label           String?
   businessName    String
   businessProfile Json? // dados verificados (endereço, horários, serviços...)

@@ -6,7 +6,7 @@ import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
 import {
   verifyWhatsappSignature,
   parseInboundMessages,
-  getWhatsAppProvider,
+  sendWhatsappReply,
 } from '@informatizou/providers';
 import { botConfigFields, buildBotConfigData } from './config-shared.js';
 
@@ -122,7 +122,7 @@ export const whatsappAdminRoutes: FastifyPluginAsync = async (app) => {
   const guard = { preHandler: [app.authenticate, app.authorize('integrations.configure')] };
 
   r.get('/config', { ...guard, schema: { tags: ['whatsapp'], summary: 'Lista configs do chatbot' } }, () =>
-    p.whatsappBotConfig.findMany({ orderBy: { createdAt: 'desc' } }),
+    p.whatsappBotConfig.findMany({ orderBy: { createdAt: 'desc' }, omit: { accessToken: true } }),
   );
 
   r.put(
@@ -201,21 +201,19 @@ export const whatsappAdminRoutes: FastifyPluginAsync = async (app) => {
       const conv = await p.whatsappConversation.findUnique({ where: { id: req.params.id } });
       if (!conv) return reply.code(404).send({ error: 'conversa não encontrada' });
 
-      const provider = getWhatsAppProvider({
-        WHATSAPP_PROVIDER: env.WHATSAPP_PROVIDER,
-        ENABLE_WHATSAPP_DELIVERY: env.ENABLE_WHATSAPP_DELIVERY,
-        WHATSAPP_ACCESS_TOKEN: env.WHATSAPP_ACCESS_TOKEN,
-        WHATSAPP_PHONE_NUMBER_ID: env.WHATSAPP_PHONE_NUMBER_ID,
-        WHATSAPP_API_VERSION: env.WHATSAPP_API_VERSION,
-      });
-
-      let providerMessageId: string | undefined;
-      let delivered = false;
-      if (provider.canSend()) {
-        const sent = await provider.send({ to: conv.contactPhone, body: req.body.text });
-        providerMessageId = sent.providerMessageId;
-        delivered = true;
-      }
+      const cfg = await p.whatsappBotConfig.findUnique({ where: { phoneNumberId: conv.phoneNumberId } });
+      const out = await sendWhatsappReply(
+        {
+          phoneNumberId: conv.phoneNumberId,
+          accessToken: cfg?.accessToken ?? env.WHATSAPP_ACCESS_TOKEN,
+          apiVersion: env.WHATSAPP_API_VERSION,
+          enabled: env.ENABLE_WHATSAPP_DELIVERY,
+        },
+        conv.contactPhone,
+        req.body.text,
+      );
+      const providerMessageId = out.providerMessageId;
+      const delivered = out.delivered;
 
       const msg = await p.whatsappMessage.create({
         data: {

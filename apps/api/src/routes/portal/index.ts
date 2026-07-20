@@ -11,7 +11,7 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from '@informatizou/auth';
-import { getWhatsAppProvider, getEmailProvider } from '@informatizou/providers';
+import { sendWhatsappReply, getEmailProvider } from '@informatizou/providers';
 import type { Customer } from '@informatizou/database';
 import { apiEnv } from '../../config.js';
 import { botConfigFields, buildBotConfigData } from '../whatsapp/config-shared.js';
@@ -387,6 +387,7 @@ export async function portalRoutes(app: FastifyInstance): Promise<void> {
       p.whatsappBotConfig.findMany({
         where: { customerId: req.portalCustomer!.sub },
         orderBy: { createdAt: 'desc' },
+        omit: { accessToken: true },
       }),
   );
 
@@ -475,20 +476,19 @@ export async function portalRoutes(app: FastifyInstance): Promise<void> {
       if (!conv) return reply.code(404).send({ error: 'Not Found' });
 
       const wenv = loadEnv();
-      const provider = getWhatsAppProvider({
-        WHATSAPP_PROVIDER: wenv.WHATSAPP_PROVIDER,
-        ENABLE_WHATSAPP_DELIVERY: wenv.ENABLE_WHATSAPP_DELIVERY,
-        WHATSAPP_ACCESS_TOKEN: wenv.WHATSAPP_ACCESS_TOKEN,
-        WHATSAPP_PHONE_NUMBER_ID: wenv.WHATSAPP_PHONE_NUMBER_ID,
-        WHATSAPP_API_VERSION: wenv.WHATSAPP_API_VERSION,
-      });
-      let providerMessageId: string | undefined;
-      let delivered = false;
-      if (provider.canSend()) {
-        const sent = await provider.send({ to: conv.contactPhone, body: req.body.text });
-        providerMessageId = sent.providerMessageId;
-        delivered = true;
-      }
+      const cfg = await p.whatsappBotConfig.findUnique({ where: { phoneNumberId: conv.phoneNumberId } });
+      const out = await sendWhatsappReply(
+        {
+          phoneNumberId: conv.phoneNumberId,
+          accessToken: cfg?.accessToken ?? wenv.WHATSAPP_ACCESS_TOKEN,
+          apiVersion: wenv.WHATSAPP_API_VERSION,
+          enabled: wenv.ENABLE_WHATSAPP_DELIVERY,
+        },
+        conv.contactPhone,
+        req.body.text,
+      );
+      const providerMessageId = out.providerMessageId;
+      const delivered = out.delivered;
       const msg = await p.whatsappMessage.create({
         data: {
           conversationId: conv.id,

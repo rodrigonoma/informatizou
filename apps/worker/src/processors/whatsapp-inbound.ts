@@ -3,7 +3,7 @@ import { prisma } from '@informatizou/database';
 import { loadEnv } from '@informatizou/config';
 import {
   getAiProvider,
-  getWhatsAppProvider,
+  sendWhatsappReply,
   decideFlow,
   type BotFlowConfig,
   type BotMenuOption,
@@ -144,22 +144,22 @@ export async function whatsappInboundHandler(job: Job): Promise<unknown> {
     log.info('conversa transferida para atendente humano');
   }
 
-  // Envia pela API oficial (travado por ENABLE_WHATSAPP_DELIVERY — padrão seguro).
-  const provider = getWhatsAppProvider({
-    WHATSAPP_PROVIDER: env.WHATSAPP_PROVIDER,
-    ENABLE_WHATSAPP_DELIVERY: env.ENABLE_WHATSAPP_DELIVERY,
-    WHATSAPP_ACCESS_TOKEN: env.WHATSAPP_ACCESS_TOKEN,
-    WHATSAPP_PHONE_NUMBER_ID: env.WHATSAPP_PHONE_NUMBER_ID,
-    WHATSAPP_API_VERSION: env.WHATSAPP_API_VERSION,
-  });
-
-  let providerMessageId: string | undefined;
-  const canSend = provider.canSend();
-  if (canSend) {
-    const sent = await provider.send({ to: conv.contactPhone, body: reply });
-    providerMessageId = sent.providerMessageId;
-  } else {
-    log.warn('ENABLE_WHATSAPP_DELIVERY desligado — resposta gerada, não enviada');
+  // Envia pelo NÚMERO DA CONVERSA (multi-cliente): usa o token da config se houver,
+  // senão o global do .env. Travado por ENABLE_WHATSAPP_DELIVERY (padrão seguro).
+  const sent = await sendWhatsappReply(
+    {
+      phoneNumberId: conv.phoneNumberId,
+      accessToken: config.accessToken ?? env.WHATSAPP_ACCESS_TOKEN,
+      apiVersion: env.WHATSAPP_API_VERSION,
+      enabled: env.ENABLE_WHATSAPP_DELIVERY,
+    },
+    conv.contactPhone,
+    reply,
+  );
+  const canSend = sent.delivered;
+  const providerMessageId = sent.providerMessageId;
+  if (!canSend) {
+    log.warn('entrega desligada ou sem credencial do número — resposta gerada, não enviada');
   }
 
   await prisma.whatsappMessage.create({

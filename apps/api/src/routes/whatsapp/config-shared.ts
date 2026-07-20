@@ -20,6 +20,9 @@ export const businessHoursSchema = z.object({
 
 /** Campos de configuração do bot, sem o `phoneNumberId` (que vem à parte). */
 export const botConfigFields = {
+  // Credencial de envio deste número (multi-cliente). Só definida via operador.
+  accessToken: z.string().optional(),
+  wabaId: z.string().optional(),
   label: z.string().optional(),
   businessName: z.string().min(1),
   businessProfile: z.record(z.string(), z.unknown()).optional(),
@@ -43,6 +46,8 @@ export type BotConfigFields = z.infer<typeof botConfigFieldsSchema>;
 
 export interface BotConfigData {
   businessName: string;
+  accessToken?: string;
+  wabaId?: string | null;
   label: string | null;
   tone: string | null;
   greeting: string | null;
@@ -83,5 +88,8 @@ export function buildBotConfigData(b: BotConfigFields): BotConfigData {
     data.businessHours = b.businessHours as unknown as object;
   }
   if (b.options !== undefined) data.options = b.options as unknown as object;
+  // accessToken só entra quando enviado (não apaga um token existente).
+  if (b.accessToken !== undefined) data.accessToken = b.accessToken;
+  if (b.wabaId !== undefined) data.wabaId = b.wabaId ?? null;
   return data;
 }

@@ -136,6 +136,40 @@ export async function sendCloudApiText(params: SendCloudApiTextParams): Promise<
   return { accepted: true, providerMessageId: data.messages?.[0]?.id };
 }
 
+/** Credenciais de envio de um número específico (multi-cliente). */
+export interface WhatsappSendCreds {
+  phoneNumberId?: string;
+  accessToken?: string;
+  apiVersion?: string;
+  /** ENABLE_WHATSAPP_DELIVERY — trava de segurança global. */
+  enabled: boolean;
+  fetchImpl?: FetchLike;
+}
+
+/**
+ * Envia uma resposta usando as credenciais do NÚMERO DA CONVERSA (não um número
+ * global). Assim a plataforma atende vários clientes, cada um no seu número.
+ * Devolve `delivered: false` quando a entrega está desligada ou faltam credenciais.
+ */
+export async function sendWhatsappReply(
+  creds: WhatsappSendCreds,
+  to: string,
+  text: string,
+): Promise<{ delivered: boolean; providerMessageId?: string }> {
+  if (!creds.enabled || !creds.accessToken || !creds.phoneNumberId) {
+    return { delivered: false };
+  }
+  const res = await sendCloudApiText({
+    apiVersion: creds.apiVersion,
+    phoneNumberId: creds.phoneNumberId,
+    accessToken: creds.accessToken,
+    to,
+    text,
+    fetchImpl: creds.fetchImpl,
+  });
+  return { delivered: res.accepted, providerMessageId: res.providerMessageId };
+}
+
 /** Verifica a assinatura X-Hub-Signature-256 do webhook (HMAC-SHA256 do corpo cru). */
 export function verifyWhatsappSignature(
   appSecret: string,
