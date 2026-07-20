@@ -27,7 +27,23 @@ export const securityPlugin = fp(async (app) => {
     crossOriginResourcePolicy: { policy: 'same-site' },
   });
 
-  const allowedOrigins = [env.ADMIN_BASE_URL, env.APP_BASE_URL, env.DEMO_BASE_URL];
+  // Aceita as variantes www/apex de cada origem (o painel do cliente é servido
+  // pelo site institucional, que pode ser acessado com ou sem "www.").
+  const withWwwVariants = (urls: string[]): string[] => {
+    const set = new Set<string>();
+    for (const raw of urls) {
+      set.add(raw);
+      try {
+        const u = new URL(raw);
+        const host = u.host.startsWith('www.') ? u.host.slice(4) : `www.${u.host}`;
+        set.add(`${u.protocol}//${host}`);
+      } catch {
+        // ignora URLs inválidas
+      }
+    }
+    return [...set];
+  };
+  const allowedOrigins = withWwwVariants([env.ADMIN_BASE_URL, env.APP_BASE_URL, env.DEMO_BASE_URL]);
   await app.register(cors, {
     origin: allowedOrigins,
     credentials: true,

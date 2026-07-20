@@ -5,6 +5,8 @@ import {
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
+  signPortalToken,
+  verifyPortalToken,
   TokenError,
 } from './tokens.js';
 
@@ -42,5 +44,18 @@ describe('tokens (JWT)', () => {
       { accessTtl: '-1s' },
     );
     expect(() => verifyAccessToken(token, SECRET)).toThrow(TokenError);
+  });
+
+  it('assina e verifica token do painel do cliente (kind=customer)', () => {
+    const token = signPortalToken({ sub: 'c1', email: 'dono@negocio.com' }, SECRET);
+    const payload = verifyPortalToken(token, SECRET);
+    expect(payload.sub).toBe('c1');
+    expect(payload.email).toBe('dono@negocio.com');
+    expect(payload.kind).toBe('customer');
+  });
+
+  it('rejeita token interno usado como token do painel', () => {
+    const internal = signAccessToken({ sub: 'u1', role: UserRole.ADMIN, email: 'a@b.com' }, SECRET);
+    expect(() => verifyPortalToken(internal, SECRET)).toThrow(TokenError);
   });
 });

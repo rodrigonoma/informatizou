@@ -10,6 +10,10 @@ function launch(id: string) {
   open(id, { w: a?.w, h: a?.h });
   emit('close');
 }
+function painel() {
+  emit('close');
+  navigateTo('/painel/login');
+}
 function desligar() {
   shutdown();
   emit('close');
@@ -32,6 +36,11 @@ function desligar() {
       <button class="mi" @click="launch('contato')">
         <span class="mi-ico" v-html="getApp('contato')?.glyph" />
         <span class="mi-label">Contato</span>
+      </button>
+      <div class="mi-sep" />
+      <button class="mi" @click="painel()">
+        <span class="mi-ico mi-key">🔑</span>
+        <span class="mi-label">Painel do Cliente</span>
       </button>
       <div class="mi-sep" />
       <button class="mi" @click="desligar()">
@@ -107,6 +116,9 @@ function desligar() {
 .mi-power {
   background: #b00;
   font-size: 15px;
+}
+.mi-key {
+  font-size: 16px;
 }
 .mi-label {
   font-weight: 500;

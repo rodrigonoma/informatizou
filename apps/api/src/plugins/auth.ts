@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import cookie from '@fastify/cookie';
-import { verifyAccessToken, can, type Action } from '@informatizou/auth';
+import { verifyAccessToken, verifyPortalToken, can, type Action } from '@informatizou/auth';
 import { apiEnv } from '../config.js';
 
 /**
@@ -36,6 +36,21 @@ export const authPlugin = fp(async (app) => {
     }
     if (!can(user.role, action)) {
       await reply.code(403).send({ error: 'Forbidden', message: `sem permissão para: ${action}` });
+    }
+  });
+
+  // Autenticação do painel do cliente (token com kind='customer', isolado do interno).
+  app.decorate('authenticateCustomer', async (request, reply) => {
+    const header = request.headers.authorization;
+    if (!header || !header.startsWith('Bearer ')) {
+      await reply.code(401).send({ error: 'Unauthorized', message: 'token de acesso ausente' });
+      return;
+    }
+    const token = header.slice('Bearer '.length);
+    try {
+      request.portalCustomer = verifyPortalToken(token, env.JWT_SECRET);
+    } catch {
+      await reply.code(401).send({ error: 'Unauthorized', message: 'token inválido ou expirado' });
     }
   });
 });

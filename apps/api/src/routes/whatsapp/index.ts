@@ -8,6 +8,7 @@ import {
   parseInboundMessages,
   getWhatsAppProvider,
 } from '@informatizou/providers';
+import { botConfigFields, buildBotConfigData } from './config-shared.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -108,39 +109,9 @@ export const whatsappWebhookRoutes: FastifyPluginAsync = async (app) => {
   });
 };
 
-const menuOptionSchema = z.object({
-  key: z.string().min(1),
-  label: z.string().min(1),
-  keywords: z.array(z.string()).optional(),
-  response: z.string().min(1),
-  handoff: z.boolean().optional(),
-});
-
-const businessHoursSchema = z.object({
-  enabled: z.boolean(),
-  tz: z.string().optional(),
-  // "0"(dom)…"6"(sáb) => faixas [["09:00","18:00"], ...]
-  days: z.record(z.string(), z.array(z.tuple([z.string(), z.string()]))),
-});
-
 const configSchema = z.object({
   phoneNumberId: z.string().min(1),
-  label: z.string().optional(),
-  businessName: z.string().min(1),
-  businessProfile: z.record(z.string(), z.unknown()).optional(),
-  tone: z.string().optional(),
-  greeting: z.string().optional(),
-  awayMessage: z.string().optional(),
-  fallbackMessage: z.string().optional(),
-  handoffMessage: z.string().optional(),
-  handoffKeyword: z.string().optional(),
-  knowledge: z.string().optional(),
-  businessHours: businessHoursSchema.nullable().optional(),
-  menuEnabled: z.boolean().optional(),
-  menuHeader: z.string().optional(),
-  options: z.array(menuOptionSchema).optional(),
-  aiEnabled: z.boolean().optional(),
-  enabled: z.boolean().optional(),
+  ...botConfigFields,
 });
 
 /** Rotas administrativas do chatbot (autenticadas): configurar o bot e ver conversas. */
@@ -158,40 +129,11 @@ export const whatsappAdminRoutes: FastifyPluginAsync = async (app) => {
     '/config',
     { ...guard, schema: { tags: ['whatsapp'], summary: 'Cria/atualiza a config do chatbot', body: configSchema } },
     async (req) => {
-      const b = req.body;
-      // businessProfile só é incluído quando enviado (JSON nulo não é aceito pelo Prisma).
-      const profile =
-        b.businessProfile === undefined
-          ? {}
-          : { businessProfile: b.businessProfile as unknown as object };
-      // JSON nulos não são aceitos pelo Prisma — só incluímos quando enviados.
-      const hours =
-        b.businessHours === undefined
-          ? {}
-          : { businessHours: (b.businessHours ?? undefined) as unknown as object | undefined };
-      const opts =
-        b.options === undefined ? {} : { options: b.options as unknown as object };
-      const data = {
-        label: b.label ?? null,
-        businessName: b.businessName,
-        tone: b.tone ?? null,
-        greeting: b.greeting ?? null,
-        awayMessage: b.awayMessage ?? null,
-        fallbackMessage: b.fallbackMessage ?? null,
-        handoffMessage: b.handoffMessage ?? null,
-        handoffKeyword: b.handoffKeyword ?? 'atendente',
-        knowledge: b.knowledge ?? null,
-        menuEnabled: b.menuEnabled ?? false,
-        menuHeader: b.menuHeader ?? null,
-        aiEnabled: b.aiEnabled ?? true,
-        enabled: b.enabled ?? true,
-        ...profile,
-        ...hours,
-        ...opts,
-      };
+      const { phoneNumberId, ...fields } = req.body;
+      const data = buildBotConfigData(fields);
       return p.whatsappBotConfig.upsert({
-        where: { phoneNumberId: b.phoneNumberId },
-        create: { phoneNumberId: b.phoneNumberId, ...data },
+        where: { phoneNumberId },
+        create: { phoneNumberId, ...data },
         update: data,
       });
     },

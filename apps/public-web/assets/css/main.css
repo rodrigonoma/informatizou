@@ -119,6 +119,61 @@ button {
     inset 2px 2px 0 var(--w-light);
 }
 
+/* ---- Painel do cliente (janela logada) ---- */
+.win-title {
+  background: linear-gradient(90deg, var(--w-navy), var(--w-blue));
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 3px 4px 3px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.win-input,
+.win-textarea,
+.win-select {
+  width: 100%;
+  background: #fff;
+  color: var(--w-ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 5px;
+  border: none;
+  box-shadow:
+    inset -1px -1px 0 var(--w-hi),
+    inset 1px 1px 0 var(--w-shadow),
+    inset -2px -2px 0 var(--w-light),
+    inset 2px 2px 0 var(--w-dark);
+}
+.win-textarea {
+  resize: vertical;
+}
+.win-well {
+  background: var(--w-face);
+  box-shadow:
+    inset -1px -1px 0 var(--w-hi),
+    inset 1px 1px 0 var(--w-shadow),
+    inset -2px -2px 0 var(--w-light),
+    inset 2px 2px 0 var(--w-dark);
+}
+.win-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--w-ink);
+}
+.win-legend {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 4px;
+}
+.win-fieldset {
+  border: 1px solid var(--w-shadow);
+  border-right-color: var(--w-hi);
+  border-bottom-color: var(--w-hi);
+  padding: 10px 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

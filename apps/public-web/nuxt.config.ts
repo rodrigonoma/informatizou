@@ -7,6 +7,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      // API pública (o painel do cliente chama estes endpoints no navegador).
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:4000',
+    },
+  },
   app: {
     head: {
       title: 'Informatizou — tudo para digitalizar o seu negócio',

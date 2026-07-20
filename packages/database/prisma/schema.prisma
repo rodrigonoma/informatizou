@@ -966,6 +966,11 @@ model Customer {
   phone    String?
   notes    String?
 
+  // Acesso ao painel do cliente (área logada do negócio).
+  portalEmail       String?   @unique
+  passwordHash      String?
+  lastPortalLoginAt DateTime?
+
   createdBy String?
   updatedBy String?
   createdAt DateTime  @default(now())
@@ -973,12 +978,30 @@ model Customer {
   deletedAt DateTime?
   version   Int       @default(1)
 
-  sites          CustomerSite[]
-  subscriptions  CustomerSubscription[]
+  sites           CustomerSite[]
+  subscriptions   CustomerSubscription[]
   onboardingTasks CustomerOnboardingTask[]
-  proposals      Proposal[]
+  proposals       Proposal[]
+  whatsappConfigs WhatsappBotConfig[]
+  portalSessions  CustomerSession[]
 
   @@index([deletedAt])
+}
+
+/** Sessão do painel do cliente (refresh token httpOnly, para revogação). */
+model CustomerSession {
+  id               String    @id @default(cuid())
+  customerId       String
+  customer         Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  ip               String?
+  userAgent        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId])
 }
 
 model CustomerSite {
@@ -1137,8 +1160,10 @@ enum WhatsappConvMode {
 
 /** Configuração do atendente por IA de um número de WhatsApp (por phoneNumberId). */
 model WhatsappBotConfig {
-  id              String   @id @default(cuid())
-  phoneNumberId   String   @unique
+  id              String    @id @default(cuid())
+  phoneNumberId   String    @unique
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   label           String?
   businessName    String
   businessProfile Json? // dados verificados (endereço, horários, serviços...)
@@ -1158,6 +1183,8 @@ model WhatsappBotConfig {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([customerId])
 }
 
 /** Uma conversa com um contato (por número + contato). */

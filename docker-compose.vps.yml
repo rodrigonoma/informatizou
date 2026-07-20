@@ -102,6 +102,9 @@ services:
       dockerfile: infrastructure/docker/Dockerfile.nuxt
       args:
         APP: public-web
+    environment:
+      # O painel do cliente (área logada em /painel) chama a API pública no navegador.
+      NUXT_PUBLIC_API_BASE: https://api.informatizou.com.br
     ports:
       - '127.0.0.1:18030:3000'
     restart: always

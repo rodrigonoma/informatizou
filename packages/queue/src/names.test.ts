@@ -9,13 +9,15 @@ const EXPECTED = [
   'demo-publication', 'screenshot-generation', 'demo-expiration', 'outreach-message-generation',
   'outreach-approval', 'outreach-delivery', 'outreach-response-processing', 'analytics-processing',
   'proposal-generation', 'export-generation', 'cleanup', 'backup',
+  // Chatbot do WhatsApp (atendimento por IA + fluxo configurável).
+  'whatsapp-inbound',
 ];
 
 describe('queue names/connection (§39)', () => {
-  it('define exatamente as 24 filas', () => {
-    expect(ALL_QUEUE_NAMES).toHaveLength(24);
+  it('define exatamente as 25 filas', () => {
+    expect(ALL_QUEUE_NAMES).toHaveLength(25);
     for (const q of EXPECTED) expect(ALL_QUEUE_NAMES).toContain(q);
-    expect(new Set(ALL_QUEUE_NAMES).size).toBe(24);
+    expect(new Set(ALL_QUEUE_NAMES).size).toBe(25);
   });
 
   it('demo-expiration existe', () => {
