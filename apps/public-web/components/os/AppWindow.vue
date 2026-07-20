@@ -5,21 +5,17 @@ import type { WindowState } from '~/composables/useDesktop';
 const props = defineProps<{ win: WindowState }>();
 
 const { getApp } = useApps();
-const { close, toggleMin, toggleMax, focus, setPos, isMobile } = useDesktop();
+const { windows, close, toggleMin, toggleMax, focus, setPos, isMobile } = useDesktop();
 
 const app = computed(() => getApp(props.win.id));
+const focused = computed(() => {
+  const maxZ = Math.max(...windows.value.map((w) => w.z));
+  return props.win.z === maxZ;
+});
 
 const style = computed(() => {
   if (props.win.maximized) {
-    return {
-      top: '44px',
-      left: '8px',
-      right: '8px',
-      bottom: '8px',
-      width: 'auto',
-      height: 'auto',
-      zIndex: String(props.win.z),
-    } as Record<string, string>;
+    return { top: '0px', left: '0px', right: '0px', bottom: '30px', width: 'auto', height: 'auto', zIndex: String(props.win.z) } as Record<string, string>;
   }
   return {
     left: props.win.x + 'px',
@@ -39,7 +35,7 @@ let oy = 0;
 function onHeaderDown(e: PointerEvent) {
   focus(props.win.id);
   if (props.win.maximized || isMobile()) return;
-  if ((e.target as HTMLElement).closest('.traffic')) return;
+  if ((e.target as HTMLElement).closest('.tb-btns')) return;
   dragging = true;
   sx = e.clientX;
   sy = e.clientY;
@@ -50,9 +46,7 @@ function onHeaderDown(e: PointerEvent) {
 }
 function onMove(e: PointerEvent) {
   if (!dragging) return;
-  const nx = ox + (e.clientX - sx);
-  const ny = Math.max(44, oy + (e.clientY - sy)); // não cobre a barra de menu
-  setPos(props.win.id, nx, ny);
+  setPos(props.win.id, ox + (e.clientX - sx), Math.max(0, oy + (e.clientY - sy)));
 }
 function onUp() {
   dragging = false;
@@ -64,23 +58,20 @@ function onUp() {
 <template>
   <section
     v-if="app"
-    class="win os-scroll-host"
+    class="win bevel-out"
     :class="{ 'is-max': win.maximized }"
     :style="style"
     @pointerdown="focus(win.id)"
   >
-    <header class="win-head" @pointerdown="onHeaderDown" @dblclick="toggleMax(win.id)">
-      <div class="traffic">
-        <button class="tl tl-close" aria-label="Fechar" @click="close(win.id)"><span>×</span></button>
-        <button class="tl tl-min" aria-label="Minimizar" @click="toggleMin(win.id)"><span>–</span></button>
-        <button class="tl tl-max" aria-label="Maximizar" @click="toggleMax(win.id)"><span>+</span></button>
-      </div>
-      <div class="win-title">
-        <span class="win-ico" :style="{ color: app.accent }" v-html="app.glyph" />
-        {{ app.name }}
-      </div>
-      <div class="win-spacer" />
-    </header>
+    <div class="titlebar" :class="{ off: !focused }" @pointerdown="onHeaderDown" @dblclick="toggleMax(win.id)">
+      <span class="tb-ico" v-html="app.glyph" />
+      <span class="tb-name">{{ app.name }}</span>
+      <span class="tb-btns">
+        <button class="tb-btn" aria-label="Minimizar" @click="toggleMin(win.id)"><b class="g-min" /></button>
+        <button class="tb-btn" aria-label="Maximizar" @click="toggleMax(win.id)"><b class="g-max" /></button>
+        <button class="tb-btn tb-close" aria-label="Fechar" @click="close(win.id)"><b class="g-close" /></button>
+      </span>
+    </div>
     <div class="win-body os-scroll">
       <OsProductView :app="app" />
     </div>
@@ -92,92 +83,112 @@ function onUp() {
   position: fixed;
   display: flex;
   flex-direction: column;
-  min-width: 280px;
-  max-width: calc(100vw - 16px);
-  background: var(--win-bg);
-  color: var(--win-ink);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: var(--win-radius);
-  box-shadow: var(--win-shadow);
-  backdrop-filter: saturate(180%) blur(24px);
-  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  min-width: 260px;
+  max-width: calc(100vw - 8px);
+  background: var(--w-face);
+  color: var(--w-ink);
+  padding: 3px;
   overflow: hidden;
-  animation: win-in 0.28s var(--ease) both;
 }
-.win-head {
+.titlebar {
   flex: none;
-  height: 42px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  height: 22px;
+  display: flex;
   align-items: center;
-  padding: 0 12px;
-  background: var(--win-head);
-  border-bottom: 1px solid var(--win-hair);
+  gap: 5px;
+  padding: 0 3px 0 4px;
+  background: linear-gradient(90deg, var(--w-navy), var(--w-blue));
+  color: #fff;
   cursor: grab;
   user-select: none;
 }
-.win-head:active {
+.titlebar.off {
+  background: var(--w-navy-off);
+}
+.titlebar:active {
   cursor: grabbing;
 }
-.traffic {
-  display: flex;
-  gap: 8px;
-  justify-self: start;
+.tb-ico {
+  width: 15px;
+  height: 15px;
+  display: block;
+  color: #fff;
 }
-.tl {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
+.tb-ico :deep(svg) {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+.tb-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tb-btns {
+  display: flex;
+  gap: 2px;
+}
+.tb-btn {
+  width: 18px;
+  height: 17px;
   display: grid;
   place-items: center;
-  color: transparent;
-  transition: color 0.15s;
+  background: var(--w-face);
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
 }
-.tl span {
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 700;
+.tb-btn:active {
+  box-shadow:
+    inset 1px 1px 0 var(--w-dark),
+    inset -1px -1px 0 var(--w-hi);
 }
-.tl-close {
-  background: #ff5f57;
-}
-.tl-min {
-  background: #febc2e;
-}
-.tl-max {
-  background: #28c840;
-}
-.traffic:hover .tl {
-  color: rgba(0, 0, 0, 0.5);
-}
-.win-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--win-ink);
-  white-space: nowrap;
-}
-.win-ico {
-  width: 16px;
-  height: 16px;
+.tb-btn b {
   display: block;
 }
-.win-ico :deep(svg) {
-  width: 16px;
-  height: 16px;
-  display: block;
+.g-min {
+  width: 7px;
+  height: 2px;
+  background: #000;
+  margin-top: 6px;
+}
+.g-max {
+  width: 9px;
+  height: 8px;
+  border: 1px solid #000;
+  border-top-width: 2px;
+}
+.g-close {
+  width: 8px;
+  height: 8px;
+  position: relative;
+}
+.g-close::before,
+.g-close::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: -1px;
+  width: 10px;
+  height: 2px;
+  background: #000;
+}
+.g-close::before {
+  transform: rotate(45deg);
+}
+.g-close::after {
+  transform: rotate(-45deg);
 }
 .win-body {
   flex: 1;
+  margin-top: 2px;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-@media (max-width: 760px) {
-  .win-head {
-    height: 46px;
-  }
+  background: var(--w-face);
 }
 </style>

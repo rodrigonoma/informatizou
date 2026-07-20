@@ -19,7 +19,7 @@ export default defineNuxtConfig({
           content:
             'Informatizou: sites profissionais, chatbot no WhatsApp, e-mail corporativo, hospedagem, manutenção e loja online. Tudo para digitalizar o seu negócio — com demonstração antes de decidir.',
         },
-        { name: 'theme-color', content: '#0a0a12' },
+        { name: 'theme-color', content: '#008080' },
         { name: 'robots', content: 'index, follow' },
         { property: 'og:title', content: 'Informatizou — tudo para digitalizar o seu negócio' },
         {

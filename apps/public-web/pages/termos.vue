@@ -3,66 +3,101 @@ useHead({ title: 'Termos de Uso — Informatizou' });
 </script>
 
 <template>
-  <main class="doc os-scroll">
-    <div class="doc-inner">
-      <NuxtLink to="/" class="doc-back">‹ InformatizouOS</NuxtLink>
-      <h1>Termos de Uso</h1>
-      <p>
-        Ao contratar os serviços da Informatizou, você concorda com os termos descritos nesta
-        página, que regem a criação, hospedagem e manutenção de sites.
-      </p>
-      <p>
-        As demonstrações apresentadas são propostas visuais temporárias e não representam o site
-        oficial do estabelecimento até a contratação e publicação formal.
-      </p>
-      <p>
-        Os planos de manutenção mensal são opcionais e podem ser ajustados ou cancelados conforme
-        as condições acordadas.
-      </p>
-      <p class="doc-note">
-        Este documento é um modelo inicial e será detalhado conforme a evolução do serviço.
-      </p>
+  <main class="doc-desk">
+    <div class="doc bevel-out">
+      <div class="doc-title">
+        <span>Termos de Uso — Bloco de Notas</span>
+        <NuxtLink to="/" class="doc-x" aria-label="Voltar">✕</NuxtLink>
+      </div>
+      <div class="doc-body bevel-in os-scroll">
+        <h1>Termos de Uso</h1>
+        <p>
+          Ao contratar os serviços da Informatizou, você concorda com os termos descritos nesta
+          página, que regem a criação, hospedagem e manutenção de sites.
+        </p>
+        <p>
+          As demonstrações apresentadas são propostas visuais temporárias e não representam o site
+          oficial do estabelecimento até a contratação e publicação formal.
+        </p>
+        <p>
+          Os planos de manutenção mensal são opcionais e podem ser ajustados ou cancelados conforme
+          as condições acordadas.
+        </p>
+        <p class="doc-note">
+          Este documento é um modelo inicial e será detalhado conforme a evolução do serviço.
+        </p>
+        <p><NuxtLink to="/" class="btn95 doc-back">‹ Voltar ao InformatizouOS</NuxtLink></p>
+      </div>
     </div>
   </main>
 </template>
 
 <style scoped>
-.doc {
+.doc-desk {
   position: fixed;
   inset: 0;
-  overflow-y: auto;
-  background: linear-gradient(160deg, var(--desk-2), var(--desk-1));
-  color: #e9e9ef;
+  background: var(--w-teal);
+  overflow: auto;
+  padding: 5vh 16px;
 }
-.doc-inner {
-  max-width: 64ch;
+.doc {
+  max-width: 720px;
   margin: 0 auto;
-  padding: clamp(3.5rem, 12vh, 7rem) 1.5rem 4rem;
+  background: var(--w-face);
+  padding: 3px;
+}
+.doc-title {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3px 0 6px;
+  background: linear-gradient(90deg, var(--w-navy), var(--w-blue));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.doc-x {
+  width: 18px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  color: #000;
+  text-decoration: none;
+  font-size: 11px;
+  background: var(--w-face);
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
+}
+.doc-body {
+  margin-top: 2px;
+  padding: 22px 26px 26px;
+  background: #fff;
+}
+.doc-body h1 {
+  font-size: 1.6rem;
+  margin: 0 0 1.2rem;
+}
+.doc-body p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #000;
+  margin: 0 0 1rem;
+}
+.doc-body a {
+  color: #0000cc;
+}
+.doc-note {
+  color: #555 !important;
+  font-size: 12px !important;
 }
 .doc-back {
   display: inline-block;
-  margin-bottom: 2rem;
-  color: var(--n-blue);
-  font-size: 0.95rem;
-}
-.doc h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+  text-decoration: none;
+  color: #000;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 1.6rem;
-}
-.doc p {
-  font-size: 1.08rem;
-  line-height: 1.7;
-  color: #b9b9c4;
-  margin: 0 0 1.2rem;
-}
-.doc a {
-  color: var(--n-blue);
-}
-.doc-note {
-  font-size: 0.9rem !important;
-  color: #7a7a86 !important;
-  margin-top: 1.4rem !important;
 }
 </style>

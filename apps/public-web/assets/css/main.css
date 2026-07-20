@@ -1,44 +1,49 @@
 /* ============================================================================
-   InformatizouOS — o portfólio da Informatizou como um sistema operacional.
-   Área de trabalho escura com neons da marca; janelas de vidro claras.
+   InformatizouOS 95 — o portfólio da Informatizou no visual do Windows 95.
+   Área de trabalho teal, chrome cinza com bordas biseladas 3D, título azul.
    ========================================================================== */
 
 :root {
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
-    'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+  --font: Tahoma, 'Segoe UI', 'MS Sans Serif', Geneva, sans-serif;
 
-  /* Área de trabalho */
-  --desk-1: #0a0a12;
-  --desk-2: #12101d;
+  --w-teal: #008080; /* área de trabalho clássica */
+  --w-face: #c0c0c0; /* cinza das janelas/botões */
+  --w-face-2: #bfbfbf;
+  --w-hi: #ffffff; /* realce (borda clara) */
+  --w-light: #dfdfdf;
+  --w-shadow: #808080; /* sombra (borda escura) */
+  --w-dark: #000000;
+  --w-navy: #000080; /* barra de título ativa */
+  --w-blue: #1084d0;
+  --w-navy-off: #7b7b7b; /* título inativo */
+  --w-sel: #000080; /* seleção */
+  --w-ink: #000000;
+}
 
-  /* Cromática neon da marca */
-  --n-orange: #ff6a3d;
-  --n-pink: #ff3d8b;
-  --n-purple: #a855f7;
-  --n-blue: #3b9dff;
-  --n-cyan: #22d3ee;
-  --n-green: #34c759;
-
-  /* Janelas (vidro claro) */
-  --win-bg: rgba(250, 250, 252, 0.9);
-  --win-head: rgba(245, 245, 248, 0.9);
-  --win-ink: #1d1d1f;
-  --win-ink-2: #6b6b73;
-  --win-hair: rgba(0, 0, 0, 0.09);
-  --win-radius: 16px;
-  --win-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
-
-  /* Chrome do SO (translúcido escuro) */
-  --bar-bg: rgba(12, 12, 20, 0.5);
-  --bar-ink: #f2f2f5;
-  --glass-line: rgba(255, 255, 255, 0.12);
-
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+/* Bisel elevado (janelas, botões) — a assinatura do Win95 */
+.bevel-out {
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
+}
+/* Bisel afundado (campos, poços de conteúdo, bandeja) */
+.bevel-in {
+  box-shadow:
+    inset -1px -1px 0 var(--w-hi),
+    inset 1px 1px 0 var(--w-shadow),
+    inset -2px -2px 0 var(--w-light),
+    inset 2px 2px 0 var(--w-dark);
+}
+/* Bisel raso (barra de tarefas, agrupadores) */
+.bevel-thin {
+  box-shadow:
+    inset 1px 1px 0 var(--w-hi),
+    inset -1px -1px 0 var(--w-shadow);
 }
 
 * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   box-sizing: border-box;
 }
 
@@ -46,22 +51,16 @@ html,
 body {
   margin: 0;
   height: 100%;
-  background: var(--desk-1);
-  color: var(--bar-ink);
+  background: var(--w-teal);
+  color: var(--w-ink);
   font-family: var(--font);
-  overflow: hidden; /* a área de trabalho controla o scroll */
+  font-size: 13px;
+  overflow: hidden;
   overscroll-behavior: none;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
-}
-
-:focus-visible {
-  outline: 2px solid var(--n-blue);
-  outline-offset: 2px;
-  border-radius: 6px;
+  color: #0000ee;
 }
 
 button {
@@ -72,30 +71,52 @@ button {
   color: inherit;
 }
 
-/* Barra de rolagem discreta dentro das janelas */
-.os-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
-}
-.os-scroll::-webkit-scrollbar {
-  width: 10px;
-}
-.os-scroll::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.22);
-  border-radius: 8px;
-  border: 3px solid transparent;
-  background-clip: content-box;
+:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: -4px;
 }
 
-@keyframes win-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* Botão Win95 padrão */
+.btn95 {
+  min-height: 25px;
+  padding: 4px 14px;
+  background: var(--w-face);
+  color: var(--w-ink);
+  font-size: 13px;
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
+}
+.btn95:active {
+  box-shadow:
+    inset 1px 1px 0 var(--w-dark),
+    inset -1px -1px 0 var(--w-hi),
+    inset 2px 2px 0 var(--w-shadow),
+    inset -2px -2px 0 var(--w-light);
+  padding: 5px 13px 3px 15px;
+}
+
+/* Barra de rolagem estilo Win95 (aproximação) */
+.os-scroll {
+  scrollbar-width: auto;
+  scrollbar-color: var(--w-face) var(--w-light);
+}
+.os-scroll::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+.os-scroll::-webkit-scrollbar-track {
+  background: #d9d9d9;
+}
+.os-scroll::-webkit-scrollbar-thumb {
+  background: var(--w-face);
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
 }
 
 @media (prefers-reduced-motion: reduce) {

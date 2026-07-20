@@ -14,10 +14,11 @@ export interface WindowState {
 interface DesktopStore {
   windows: WindowState[];
   zTop: number;
+  off: boolean;
 }
 
 // Estado compartilhado (singleton de módulo) — todos os componentes do SO usam.
-const store = reactive<DesktopStore>({ windows: [], zTop: 10 });
+const store = reactive<DesktopStore>({ windows: [], zTop: 10, off: false });
 
 let openCount = 0;
 
@@ -91,8 +92,17 @@ export function useDesktop() {
   const isOpen = (id: string) => store.windows.some((w) => w.id === id && !w.minimized);
   const hasWindow = (id: string) => store.windows.some((w) => w.id === id);
 
+  function shutdown() {
+    store.windows.splice(0, store.windows.length);
+    store.off = true;
+  }
+  function restart() {
+    store.off = false;
+  }
+
   return {
     windows: computed(() => store.windows),
+    off: computed(() => store.off),
     open,
     close,
     focus,
@@ -102,5 +112,7 @@ export function useDesktop() {
     isOpen,
     hasWindow,
     isMobile,
+    shutdown,
+    restart,
   };
 }

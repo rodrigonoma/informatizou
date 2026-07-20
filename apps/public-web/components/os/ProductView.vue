@@ -9,221 +9,200 @@ const produtos = desktopApps.filter((a) => a.kind === 'product');
 </script>
 
 <template>
-  <div class="pv">
-    <!-- Cabeçalho comum -->
-    <div class="pv-hero">
-      <span
-        class="pv-tile"
-        :style="{ background: `linear-gradient(150deg, ${app.accent}, ${app.accent2})` }"
-        v-html="app.glyph"
-      />
-      <div>
-        <h1 class="pv-name">{{ app.name }}</h1>
-        <p v-if="app.tagline" class="pv-tag">{{ app.tagline }}</p>
-      </div>
-    </div>
-
-    <!-- README / Bem-vindo -->
-    <template v-if="app.kind === 'readme'">
-      <p class="pv-lead">
-        Bem-vindo ao <strong>InformatizouOS</strong> — a Informatizou apresentada como um sistema
-        operacional. Cada ícone da área de trabalho é um serviço que colocamos para funcionar no seu
-        negócio.
-      </p>
-      <p class="pv-p">Dê um duplo clique nos ícones (ou toque, no celular) para abrir cada produto:</p>
-      <div class="pv-grid">
-        <button v-for="p in produtos" :key="p.id" class="pv-chip" @click="open(p.id, { w: p.w, h: p.h })">
-          <span class="pv-chip-ico" :style="{ background: `linear-gradient(150deg, ${p.accent}, ${p.accent2})` }" v-html="p.glyph" />
-          {{ p.name }}
-        </button>
-      </div>
-      <a class="pv-cta" href="mailto:contato@informatizou.com.br">Falar com a gente</a>
-    </template>
-
-    <!-- Contato -->
-    <template v-else-if="app.kind === 'contact'">
-      <p class="pv-lead">Vamos conversar sobre o seu negócio.</p>
-      <ul class="pv-contact">
-        <li><span>E-mail</span><a href="mailto:contato@informatizou.com.br">contato@informatizou.com.br</a></li>
-        <li><span>Site</span><a href="https://www.informatizou.com.br">www.informatizou.com.br</a></li>
-      </ul>
-      <p class="pv-p">Conte o que você precisa — respondemos com uma demonstração, sem compromisso.</p>
-      <a v-if="app.cta" class="pv-cta" :href="app.cta.href">{{ app.cta.label }}</a>
-    </template>
-
-    <!-- Produto -->
-    <template v-else>
-      <p v-if="app.intro" class="pv-lead">{{ app.intro }}</p>
-      <div class="pv-features">
-        <div v-for="f in app.features" :key="f.t" class="pv-feat">
-          <span class="pv-dot" :style="{ background: app.accent }" />
-          <div>
-            <h3>{{ f.t }}</h3>
-            <p>{{ f.d }}</p>
-          </div>
+  <div class="pv-well bevel-in os-scroll">
+    <div class="pv">
+      <!-- Cabeçalho -->
+      <div class="pv-hero">
+        <span class="pv-ico" :style="{ background: app.accent }" v-html="app.glyph" />
+        <div>
+          <h1 class="pv-name">{{ app.name }}</h1>
+          <p v-if="app.tagline" class="pv-tag">{{ app.tagline }}</p>
         </div>
       </div>
-      <a v-if="app.cta" class="pv-cta" :href="app.cta.href" :style="{ background: app.accent }">
-        {{ app.cta.label }}
-      </a>
-    </template>
+      <hr class="pv-rule" />
+
+      <!-- README -->
+      <template v-if="app.kind === 'readme'">
+        <p class="pv-p">
+          Bem-vindo ao <strong>InformatizouOS</strong> — a Informatizou apresentada como um sistema
+          operacional. Cada ícone da área de trabalho é um serviço que colocamos para funcionar no seu
+          negócio.
+        </p>
+        <p class="pv-p">Dê um duplo clique nos ícones (ou toque, no celular) para abrir cada produto:</p>
+        <div class="pv-list">
+          <button v-for="p in produtos" :key="p.id" class="pv-item" @click="open(p.id, { w: p.w, h: p.h })">
+            <span class="pv-item-ico" :style="{ background: p.accent }" v-html="p.glyph" />
+            {{ p.name }}
+          </button>
+        </div>
+        <a class="btn95 pv-cta" href="mailto:contato@informatizou.com.br">Falar com a gente</a>
+      </template>
+
+      <!-- Contato -->
+      <template v-else-if="app.kind === 'contact'">
+        <p class="pv-p">Vamos conversar sobre o seu negócio.</p>
+        <div class="pv-fields">
+          <label>E-mail</label>
+          <a class="pv-field bevel-in" href="mailto:contato@informatizou.com.br">contato@informatizou.com.br</a>
+          <label>Site</label>
+          <a class="pv-field bevel-in" href="https://www.informatizou.com.br">www.informatizou.com.br</a>
+        </div>
+        <p class="pv-p">Conte o que você precisa — respondemos com uma demonstração, sem compromisso.</p>
+        <a v-if="app.cta" class="btn95 pv-cta" :href="app.cta.href">{{ app.cta.label }}</a>
+      </template>
+
+      <!-- Produto -->
+      <template v-else>
+        <p v-if="app.intro" class="pv-p pv-intro">{{ app.intro }}</p>
+        <ul class="pv-feats">
+          <li v-for="f in app.features" :key="f.t">
+            <span class="pv-bullet" :style="{ background: app.accent }" />
+            <strong>{{ f.t }}.</strong> {{ f.d }}
+          </li>
+        </ul>
+        <a v-if="app.cta" class="btn95 pv-cta" :href="app.cta.href">▸ {{ app.cta.label }}</a>
+      </template>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.pv-well {
+  height: 100%;
+  background: #fff;
+  overflow-y: auto;
+}
 .pv {
-  padding: 22px 24px 26px;
+  padding: 14px 16px 18px;
+  color: #000;
+  font-size: 13px;
+  line-height: 1.5;
 }
 .pv-hero {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 11px;
 }
-.pv-tile {
-  width: 56px;
-  height: 56px;
+.pv-ico {
+  width: 42px;
+  height: 42px;
   flex: none;
-  border-radius: 14px;
   display: grid;
   place-items: center;
   color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.35), inset 1px 1px 0 rgba(255, 255, 255, 0.5);
 }
-.pv-tile :deep(svg) {
-  width: 30px;
-  height: 30px;
+.pv-ico :deep(svg) {
+  width: 24px;
+  height: 24px;
 }
 .pv-name {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
 }
 .pv-tag {
-  margin: 3px 0 0;
-  font-size: 0.98rem;
-  color: var(--win-ink-2);
+  margin: 1px 0 0;
+  font-size: 0.95rem;
+  color: #333;
 }
-.pv-lead {
-  margin: 0 0 16px;
-  font-size: 1.05rem;
-  line-height: 1.55;
-  color: #3a3a40;
+.pv-rule {
+  border: none;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #fff;
+  margin: 12px 0;
 }
 .pv-p {
   margin: 0 0 12px;
-  color: var(--win-ink-2);
-  line-height: 1.5;
 }
-.pv-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 18px;
-  margin-bottom: 22px;
+.pv-intro {
+  font-size: 0.98rem;
 }
-.pv-feat {
-  display: flex;
-  gap: 10px;
-}
-.pv-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  margin-top: 6px;
-  flex: none;
-}
-.pv-feat h3 {
-  margin: 0 0 2px;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-.pv-feat p {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.4;
-  color: var(--win-ink-2);
-}
-.pv-cta {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.7rem 1.3rem;
-  border-radius: 980px;
-  background: #1d1d1f;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: transform 0.2s var(--ease), filter 0.2s var(--ease);
-}
-.pv-cta:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-.pv-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 14px 0 20px;
-}
-.pv-chip {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.04);
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--win-ink);
-  text-align: left;
-  transition: background 0.18s;
-}
-.pv-chip:hover {
-  background: rgba(0, 0, 0, 0.08);
-}
-.pv-chip-ico {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  flex: none;
-}
-.pv-chip-ico :deep(svg) {
-  width: 17px;
-  height: 17px;
-}
-.pv-contact {
+.pv-feats {
   list-style: none;
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
-.pv-contact li {
+.pv-feats li {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: baseline;
-  border-bottom: 1px solid var(--win-hair);
-  padding-bottom: 10px;
 }
-.pv-contact span {
-  width: 56px;
-  font-size: 0.8rem;
-  color: var(--win-ink-2);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.pv-bullet {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  transform: translateY(1px);
 }
-.pv-contact a {
-  color: var(--n-blue);
-  font-weight: 500;
+.pv-cta {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #000;
+}
+.pv-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 4px 0 16px;
+}
+.pv-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px;
+  background: var(--w-face);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  box-shadow:
+    inset -1px -1px 0 var(--w-dark),
+    inset 1px 1px 0 var(--w-hi),
+    inset -2px -2px 0 var(--w-shadow),
+    inset 2px 2px 0 var(--w-light);
+}
+.pv-item:active {
+  box-shadow:
+    inset 1px 1px 0 var(--w-dark),
+    inset -1px -1px 0 var(--w-hi);
+}
+.pv-item-ico {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.pv-item-ico :deep(svg) {
+  width: 16px;
+  height: 16px;
+}
+.pv-fields {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  align-items: center;
+  margin: 0 0 14px;
+}
+.pv-fields label {
+  font-weight: 700;
+}
+.pv-field {
+  padding: 4px 8px;
+  background: #fff;
+  color: #0000cc;
+  font-size: 12px;
+  text-decoration: none;
 }
 
 @media (max-width: 620px) {
-  .pv-features,
-  .pv-grid {
+  .pv-list {
     grid-template-columns: 1fr;
   }
 }
