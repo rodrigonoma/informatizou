@@ -37,7 +37,23 @@ async function main() {
 
   const project = await stitch.createProject(projectTitle);
   const projectId = project.projectId ?? project.id;
-  const screen = await project.generate(prompt, 'DESKTOP', model);
+
+  // O generate do Stitch é FLAKY (retorna "invalid argument" de forma
+  // intermitente, ~2/3 das vezes — é experimental). Falhas voltam rápido;
+  // o sucesso leva ~85s. Retry generoso resolve.
+  let screen;
+  let lastErr;
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    try {
+      screen = await project.generate(prompt, 'DESKTOP', model);
+      break;
+    } catch (e) {
+      lastErr = e;
+      process.stderr.write(`generate tentativa ${attempt} falhou: ${String(e?.message).slice(0, 80)}\n`);
+      await sleep(3000);
+    }
+  }
+  if (!screen) throw lastErr ?? new Error('generate falhou após retries');
   const screenId = screen.screenId ?? screen.id;
 
   let htmlUrl = await screen.getHtml().catch(() => '');
