@@ -4,6 +4,10 @@ import { loadEnv } from '@informatizou/config';
 import {
   getAiProvider,
   getWhatsAppProvider,
+  decideFlow,
+  type BotFlowConfig,
+  type BotMenuOption,
+  type BusinessHours,
   type BusinessContext,
   type ChatTurn,
 } from '@informatizou/providers';
@@ -21,9 +25,9 @@ function num(v: unknown): number | undefined {
 }
 
 /**
- * Atendente por IA do WhatsApp (Cloud API). Carrega a conversa e a config do
- * negócio, gera a resposta com a IA (respeitando §15 — sem inventar dados) e
- * envia pela API oficial. Entrega é travada por `ENABLE_WHATSAPP_DELIVERY`.
+ * Atendente do WhatsApp (Cloud API) — híbrido: fluxo de menu/regras configurado
+ * pelo cliente (`decideFlow`) + IA (§15 — sem inventar dados). A IA só é chamada
+ * quando o fluxo devolve `kind: 'ai'`. Entrega travada por `ENABLE_WHATSAPP_DELIVERY`.
  */
 export async function whatsappInboundHandler(job: Job): Promise<unknown> {
   const env = loadEnv();
@@ -52,59 +56,87 @@ export async function whatsappInboundHandler(job: Job): Promise<unknown> {
     return { optOut: true };
   }
 
-  // Perfil verificado do negócio (nunca inventar — §15).
-  const profile = (config.businessProfile ?? {}) as Record<string, unknown>;
-  const business: BusinessContext = {
-    businessId: config.id,
-    name: config.businessName,
-    category: str(profile.category),
-    city: str(profile.city),
-    state: str(profile.state),
-    neighborhood: str(profile.neighborhood),
-    address: str(profile.address),
-    phone: str(profile.phone),
-    whatsapp: str(profile.whatsapp),
-    email: str(profile.email),
-    instagram: str(profile.instagram),
-    rating: num(profile.rating),
-    reviewCount: num(profile.reviewCount),
-    language: 'pt-BR',
+  // Primeiro contato = ainda não respondemos nada nesta conversa.
+  const firstContact = !conv.lastOutboundAt && !conv.messages.some((m) => m.direction === 'OUTBOUND');
+
+  // Fluxo configurado pelo cliente (menu/regras/horário).
+  const flowConfig: BotFlowConfig = {
+    aiEnabled: config.aiEnabled,
+    greeting: config.greeting,
+    awayMessage: config.awayMessage,
+    handoffMessage: config.handoffMessage,
+    handoffKeyword: config.handoffKeyword,
+    fallbackMessage: config.fallbackMessage,
+    menuEnabled: config.menuEnabled,
+    menuHeader: config.menuHeader,
+    options: ((config.options as unknown as BotMenuOption[]) ?? []).filter(
+      (o) => o && typeof o.label === 'string',
+    ),
+    businessHours: (config.businessHours as unknown as BusinessHours) ?? null,
   };
 
-  // Histórico (cronológico), excluindo a mensagem atual para não duplicar.
-  const history: ChatTurn[] = [...conv.messages]
-    .reverse()
-    .filter((m) => m.text && m.waMessageId !== currentWaId)
-    .map((m) => ({ role: m.direction === 'INBOUND' ? 'user' : 'assistant', text: m.text as string }));
+  const decision = decideFlow(flowConfig, userMessage, { firstContact, now: new Date() });
 
-  // Gera a resposta por IA; qualquer falha cai no fallback + handoff.
+  // Resolve a resposta e se transfere para humano.
   let reply: string;
-  let handoff: boolean;
-  const aiConfigured = env.AI_PROVIDER === 'anthropic' && Boolean(env.ANTHROPIC_API_KEY);
-  if (aiConfigured) {
-    try {
-      const ai = getAiProvider({
-        AI_PROVIDER: env.AI_PROVIDER,
-        ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY,
-        ANTHROPIC_MODEL: env.ANTHROPIC_MODEL,
-      });
-      const res = await ai.generateChatReply({
-        business,
-        knowledge: config.knowledge ?? undefined,
-        tone: config.tone ?? undefined,
-        history,
-        userMessage,
-      });
-      reply = res.reply;
-      handoff = res.handoff;
-    } catch (err) {
-      log.error({ err: (err as Error).message }, 'falha na IA — usando fallback');
-      reply = config.fallbackMessage ?? 'Recebi sua mensagem! Já vou chamar um atendente para te ajudar.';
+  let handoff = false;
+
+  if (decision.kind === 'ai') {
+    const aiConfigured = env.AI_PROVIDER === 'anthropic' && Boolean(env.ANTHROPIC_API_KEY);
+    if (aiConfigured) {
+      // Perfil verificado do negócio (nunca inventar — §15).
+      const profile = (config.businessProfile ?? {}) as Record<string, unknown>;
+      const business: BusinessContext = {
+        businessId: config.id,
+        name: config.businessName,
+        category: str(profile.category),
+        city: str(profile.city),
+        state: str(profile.state),
+        neighborhood: str(profile.neighborhood),
+        address: str(profile.address),
+        phone: str(profile.phone),
+        whatsapp: str(profile.whatsapp),
+        email: str(profile.email),
+        instagram: str(profile.instagram),
+        rating: num(profile.rating),
+        reviewCount: num(profile.reviewCount),
+        language: 'pt-BR',
+      };
+      const history: ChatTurn[] = [...conv.messages]
+        .reverse()
+        .filter((m) => m.text && m.waMessageId !== currentWaId)
+        .map((m) => ({
+          role: m.direction === 'INBOUND' ? 'user' : 'assistant',
+          text: m.text as string,
+        }));
+      try {
+        const ai = getAiProvider({
+          AI_PROVIDER: env.AI_PROVIDER,
+          ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY,
+          ANTHROPIC_MODEL: env.ANTHROPIC_MODEL,
+        });
+        const res = await ai.generateChatReply({
+          business,
+          knowledge: config.knowledge ?? undefined,
+          tone: config.tone ?? undefined,
+          history,
+          userMessage,
+        });
+        reply = res.reply;
+        handoff = res.handoff;
+      } catch (err) {
+        log.error({ err: (err as Error).message }, 'falha na IA — usando fallback');
+        reply = config.fallbackMessage ?? 'Recebi sua mensagem! Já vou chamar um atendente para te ajudar.';
+        handoff = true;
+      }
+    } else {
+      reply = config.fallbackMessage ?? 'Recebemos sua mensagem! Em breve um atendente responde por aqui.';
       handoff = true;
     }
   } else {
-    reply = config.fallbackMessage ?? 'Recebemos sua mensagem! Em breve um atendente responde por aqui.';
-    handoff = true;
+    // away | greeting | option | handoff | fallback — resposta determinística.
+    reply = decision.text;
+    handoff = decision.kind === 'handoff' || (decision.kind === 'option' && decision.handoff);
   }
 
   if (handoff) {
@@ -144,6 +176,6 @@ export async function whatsappInboundHandler(job: Job): Promise<unknown> {
     data: { lastOutboundAt: new Date() },
   });
 
-  log.info({ handoff, delivered: canSend }, 'resposta do chatbot processada');
-  return { replied: true, handoff, delivered: canSend };
+  log.info({ kind: decision.kind, handoff, delivered: canSend }, 'resposta do chatbot processada');
+  return { replied: true, kind: decision.kind, handoff, delivered: canSend };
 }

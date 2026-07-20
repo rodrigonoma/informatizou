@@ -1137,17 +1137,24 @@ enum WhatsappConvMode {
 
 /** Configuração do atendente por IA de um número de WhatsApp (por phoneNumberId). */
 model WhatsappBotConfig {
-  id              String  @id @default(cuid())
-  phoneNumberId   String  @unique
+  id              String   @id @default(cuid())
+  phoneNumberId   String   @unique
   label           String?
   businessName    String
   businessProfile Json? // dados verificados (endereço, horários, serviços...)
   tone            String?
   greeting        String?
+  awayMessage     String? // fora do horário de atendimento
   fallbackMessage String?
-  handoffKeyword  String  @default("atendente")
-  knowledge       String? @db.Text
-  enabled         Boolean @default(true)
+  handoffMessage  String? // mensagem ao transferir para humano
+  handoffKeyword  String   @default("atendente")
+  knowledge       String?  @db.Text
+  businessHours   Json? // { enabled, tz, days: { "1": [["09:00","18:00"]], ... } }
+  menuEnabled     Boolean  @default(false)
+  menuHeader      String?
+  options         Json? // [{ key, label, keywords[], response, handoff }]
+  aiEnabled       Boolean  @default(true)
+  enabled         Boolean  @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { ProviderDisabledError } from '../errors.js';
 
+export * from './flow.js';
+
 /** Fetch injetável (para testes), compatível com globalThis.fetch. */
 export type FetchLike = (
   input: string,

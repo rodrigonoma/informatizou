@@ -17,6 +17,7 @@ const nav = [
   { to: '/outreach', label: 'Prospecção' },
   { to: '/proposals', label: 'Propostas' },
   { to: '/customers', label: 'Clientes' },
+  { to: '/whatsapp', label: 'Chatbot' },
   { to: '/audit', label: 'Auditoria' },
 ];
 </script>
