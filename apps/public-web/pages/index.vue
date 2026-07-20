@@ -1,463 +1,618 @@
 <script setup lang="ts">
-// Página institucional — cenas (não seções) do Informatizou Motion System.
+// Página institucional (Apple HIG): hero + bento + como funciona + planos + CTA.
 const contato = 'mailto:contato@informatizou.com.br?subject=Quero%20uma%20demonstração';
 
-const processo = [
-  {
-    n: '01',
-    t: 'Leitura',
-    d: 'Estudamos seu negócio a partir de informações públicas. Nada de formulários intermináveis — começamos entendendo você.',
-  },
-  {
-    n: '02',
-    t: 'Demonstração',
-    d: 'Você recebe uma prévia real da sua presença digital. Sem compromisso, sem custo, sem promessas vazias.',
-  },
-  {
-    n: '03',
-    t: 'Refino',
-    d: 'Ajustamos textos, imagens, domínio e cada detalhe junto com você, até ficar exatamente com a sua cara.',
-  },
-  {
-    n: '04',
-    t: 'Vida',
-    d: 'Publicamos e cuidamos: hospedagem segura, backups, monitoramento e evolução contínua, mês a mês.',
-  },
+const passos = [
+  { n: '01', t: 'Conhecemos você', d: 'Estudamos seu negócio a partir de informações públicas.' },
+  { n: '02', t: 'Criamos a prévia', d: 'Você recebe uma demonstração real do site, sem compromisso.' },
+  { n: '03', t: 'Ajustamos juntos', d: 'Refinamos textos, imagens, domínio e detalhes com você.' },
+  { n: '04', t: 'Publicamos e cuidamos', d: 'Colocamos no ar e mantemos com um plano mensal.' },
 ];
 
-const capacidades = [
-  { k: 'Criação', d: 'Presença sob medida — rápida, acessível e impossível de confundir com um template.' },
-  { k: 'Hospedagem', d: 'Infraestrutura própria com SSL, backups automáticos e monitoramento contínuo.' },
-  { k: 'Manutenção', d: 'Evolução mensal: alterações, suporte próximo e relatórios claros.' },
-  { k: 'Conversão', d: 'Contato, WhatsApp e caminhos pensados para transformar visita em cliente.' },
+const planos = [
+  {
+    nome: 'Implantação',
+    preco: 'Sob consulta',
+    periodo: 'pagamento único',
+    features: ['Criação do site', 'Domínio e configuração', 'Formulário e WhatsApp', 'Mapa e SEO básico', 'Publicação'],
+    destaque: false,
+  },
+  {
+    nome: 'Manutenção Essencial',
+    preco: 'Sob consulta',
+    periodo: 'por mês',
+    features: ['Hospedagem e SSL', 'Backups automáticos', 'Pequenas alterações', 'Monitoramento', 'Suporte'],
+    destaque: true,
+  },
+  {
+    nome: 'Manutenção Plus',
+    preco: 'Sob consulta',
+    periodo: 'por mês',
+    features: ['Tudo do Essencial', 'Atualizações prioritárias', 'Relatórios mensais', 'Segurança reforçada', 'Suporte estendido'],
+    destaque: false,
+  },
 ];
 </script>
 
 <template>
   <main>
-    <!-- CENA 01 — ABERTURA / SINAL -->
-    <section class="scene open">
-      <span class="scene-tag hud">01 — abertura</span>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <p class="eyebrow reveal">Informatizou</p>
+        <h1 class="h1 reveal">Sites profissionais.<br />Sem complicação.</h1>
+        <p class="sub hero-sub reveal">
+          Criação, hospedagem e manutenção do seu site — e você vê uma demonstração antes de decidir.
+        </p>
+        <div class="hero-actions reveal">
+          <a :href="contato" class="btn">Pedir demonstração</a>
+          <a href="#como-funciona" class="link-blue">Como funciona <span class="chev">›</span></a>
+        </div>
+      </div>
 
-      <div class="open-inner">
-        <p class="kicker hud reveal">◦ presença digital viva</p>
+      <!-- Mockup do produto (o site que entregamos) -->
+      <div class="hero-stage reveal">
+        <div class="mock" data-parallax="0.04" aria-hidden="true">
+          <div class="mock-bar">
+            <span class="dot" /><span class="dot" /><span class="dot" />
+            <span class="mock-url">seunegocio.com.br</span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-band">
+              <div class="mock-band-title" />
+              <div class="mock-band-text" />
+              <div class="mock-band-btn" />
+            </div>
+            <div class="mock-row">
+              <div class="mock-tile" />
+              <div class="mock-tile" />
+              <div class="mock-tile" />
+            </div>
+            <div class="mock-lines">
+              <span /><span /><span />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <h1 class="statement breathe">
-          <span class="mask-line" style="transition-delay: 0.05s"><span>Não fazemos</span></span>
-          <span class="mask-line" style="transition-delay: 0.14s"><span>sites.</span></span>
-          <span class="mask-line offset" style="transition-delay: 0.32s"><span>Construímos</span></span>
-          <span class="mask-line offset" style="transition-delay: 0.42s"
-            ><span class="sig">presença.</span></span
+    <!-- BENTO / SERVIÇOS -->
+    <section id="servicos" class="section">
+      <div class="container container-wide">
+        <div class="section-head reveal">
+          <h2 class="h2">Tudo que seu site precisa. Cuidamos de tudo.</h2>
+          <p class="sub">Você foca no seu negócio. A parte técnica é com a gente.</p>
+        </div>
+
+        <div class="bento">
+          <article class="tile tile-dark tile-wide reveal">
+            <div class="tile-text">
+              <h3 class="h3">Um site com a cara do seu negócio</h3>
+              <p class="tile-sub">Design profissional, rápido e responsável — feito sob medida, sem parecer um template.</p>
+              <a :href="contato" class="link-blue on-dark">Ver demonstração <span class="chev">›</span></a>
+            </div>
+            <div class="tile-art art-window" aria-hidden="true"><span /><span /><span /></div>
+          </article>
+
+          <article class="tile reveal">
+            <div class="tile-text">
+              <h3 class="h3">Hospedagem gerenciada</h3>
+              <p class="tile-sub">SSL, backups automáticos e monitoramento. Sempre no ar.</p>
+            </div>
+            <div class="tile-art art-shield" aria-hidden="true"><span /></div>
+          </article>
+
+          <article class="tile reveal">
+            <div class="tile-text">
+              <h3 class="h3">Manutenção mensal</h3>
+              <p class="tile-sub">Atualizações, alterações e suporte. Seu site sempre em dia.</p>
+            </div>
+            <div class="tile-art art-orbit" aria-hidden="true"><span /><span /></div>
+          </article>
+
+          <article class="tile tile-alt tile-wide reveal">
+            <div class="tile-text">
+              <h3 class="h3">Feito para converter</h3>
+              <p class="tile-sub">Contato, WhatsApp e mapa — caminhos claros para transformar visitas em clientes.</p>
+              <a :href="contato" class="link-blue">Fale com a gente <span class="chev">›</span></a>
+            </div>
+            <div class="tile-art art-chat" aria-hidden="true"><span /><span /></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMO FUNCIONA -->
+    <section id="como-funciona" class="section section-alt">
+      <div class="container">
+        <div class="section-head center reveal">
+          <p class="eyebrow">Como funciona</p>
+          <h2 class="h2">Do primeiro olhar ao site no ar.</h2>
+          <p class="sub">Quatro passos simples. Sem enrolação.</p>
+        </div>
+        <ol class="steps">
+          <li v-for="p in passos" :key="p.n" class="step reveal">
+            <span class="step-n">{{ p.n }}</span>
+            <h3 class="step-t">{{ p.t }}</h3>
+            <p class="step-d">{{ p.d }}</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- PLANOS -->
+    <section id="planos" class="section">
+      <div class="container">
+        <div class="section-head center reveal">
+          <p class="eyebrow">Planos</p>
+          <h2 class="h2">Simples e transparente.</h2>
+          <p class="sub">Implantação única e manutenção mensal opcional. Cancele quando quiser.</p>
+        </div>
+        <div class="plans">
+          <article
+            v-for="p in planos"
+            :key="p.nome"
+            class="plan reveal"
+            :class="{ 'plan-featured': p.destaque }"
           >
-        </h1>
-
-        <p class="lede hud reveal" style="transition-delay: 0.6s">
-          criação · hospedagem · manutenção — tratadas como experiência, não como produto.
-        </p>
-      </div>
-
-      <a href="#manifesto" class="scroll-hint" data-cursor aria-label="Rolar para o manifesto">
-        <span class="hud">role</span>
-        <span class="hint-line"><i /></span>
-      </a>
-    </section>
-
-    <!-- CENA 02 — MANIFESTO -->
-    <section id="manifesto" class="scene manifesto">
-      <span class="scene-tag hud">02 — manifesto</span>
-      <div class="mani-stack">
-        <p class="mani-line reveal">Cada negócio é único.</p>
-        <p class="mani-line reveal right" style="transition-delay: 0.08s">
-          Sua presença digital também deveria ser.
-        </p>
-        <p class="mani-line reveal" style="transition-delay: 0.16s" data-parallax="0.05">
-          Nada de páginas iguais. <em class="sig">Nada de templates.</em>
-        </p>
-        <p class="mani-line small reveal right" style="transition-delay: 0.24s">
-          Um ambiente vivo, feito sob medida — que faz quem chega parar e pensar:
-          <em class="sig">nunca vi algo assim.</em>
-        </p>
+            <span v-if="p.destaque" class="plan-tag">Recomendado</span>
+            <h3 class="plan-name">{{ p.nome }}</h3>
+            <div class="plan-price">
+              <span class="plan-amount">{{ p.preco }}</span>
+              <span class="plan-period">{{ p.periodo }}</span>
+            </div>
+            <ul class="plan-feats">
+              <li v-for="f in p.features" :key="f"><span class="check">✓</span>{{ f }}</li>
+            </ul>
+            <a :href="contato" class="btn plan-cta" :class="{ 'btn-ghost': !p.destaque }">Fale conosco</a>
+          </article>
+        </div>
       </div>
     </section>
 
-    <!-- CENA 03 — PROCESSO (índice vivo) -->
-    <section class="scene processo">
-      <span class="scene-tag hud">03 — processo</span>
-      <p class="proc-intro hud reveal">quatro movimentos, do primeiro olhar ao site no ar</p>
-      <div class="proc-list">
-        <article v-for="p in processo" :key="p.n" class="proc-row reveal">
-          <span class="proc-n" data-parallax="0.06">{{ p.n }}</span>
-          <h3 class="proc-t">{{ p.t }}</h3>
-          <p class="proc-d">{{ p.d }}</p>
-        </article>
+    <!-- CTA FINAL -->
+    <section class="cta section section-alt">
+      <div class="container center">
+        <h2 class="h2 reveal">Veja seu site antes de decidir.</h2>
+        <p class="sub reveal" style="margin-top: 0.8rem">Peça uma demonstração gratuita, sem compromisso.</p>
+        <div class="reveal" style="margin-top: 2rem">
+          <a :href="contato" class="btn cta-btn">Pedir demonstração</a>
+        </div>
       </div>
-    </section>
-
-    <!-- CENA 04 — CAPACIDADES (índice interativo) -->
-    <section class="scene capacidades">
-      <span class="scene-tag hud">04 — capacidades</span>
-      <ul class="cap-list">
-        <li
-          v-for="(c, i) in capacidades"
-          :key="c.k"
-          class="cap-row reveal"
-          :style="{ transitionDelay: i * 0.06 + 's' }"
-        >
-          <a :href="contato" class="cap-link" data-cursor>
-            <span class="cap-idx hud">{{ String(i + 1).padStart(2, '0') }}</span>
-            <span class="cap-k">{{ c.k }}</span>
-            <span class="cap-d">{{ c.d }}</span>
-            <span class="cap-arr">→</span>
-          </a>
-        </li>
-      </ul>
-    </section>
-
-    <!-- CENA 05 — FECHAMENTO / GESTO -->
-    <section class="scene fechamento">
-      <span class="scene-tag hud">05 — próximo passo</span>
-      <div class="fech-inner">
-        <p class="kicker hud reveal">◦ comece vendo, não decidindo</p>
-        <h2 class="fech-title">
-          <span class="mask-line"><span>Veja sua <em class="sig">presença</em></span></span>
-          <span class="mask-line" style="transition-delay: 0.12s"><span>antes de decidir.</span></span>
-        </h2>
-        <a
-          :href="contato"
-          class="fech-cta reveal"
-          data-magnetic
-          data-magnetic-strength="0.25"
-          style="transition-delay: 0.3s"
-        >
-          <span>Pedir demonstração</span>
-          <span class="fech-arr">→</span>
-        </a>
-      </div>
-
-      <!-- Rodapé HUD (não é footer tradicional) -->
-      <footer class="hud-foot reveal">
-        <span class="hud">Informatizou · 2026</span>
-        <nav class="foot-nav">
-          <NuxtLink to="/politica-privacidade" class="hud" data-cursor>política de privacidade</NuxtLink>
-          <NuxtLink to="/termos" class="hud" data-cursor>termos</NuxtLink>
-        </nav>
-        <span class="hud dim">feito com intenção</span>
-      </footer>
     </section>
   </main>
 </template>
 
 <style scoped>
-.scene {
-  position: relative;
-  padding: clamp(6rem, 14vh, 12rem) var(--edge);
-  z-index: 2;
-}
-.scene-tag {
-  position: absolute;
-  top: clamp(1.6rem, 5vh, 3rem);
-  right: var(--edge);
-  color: var(--ink-faint);
+.center {
+  text-align: center;
 }
 
-.kicker {
-  color: var(--signal);
-  margin: 0 0 clamp(1.4rem, 4vh, 2.6rem);
-}
-.sig {
-  color: var(--signal);
-  font-style: italic;
-}
-
-/* -- Cena 01 -------------------------------------------------------------- */
-.open {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.open-inner {
-  max-width: 100%;
-}
-.statement {
-  font-size: clamp(2.6rem, 10.5vw, 9.5rem);
-  font-weight: 250;
-  line-height: 0.94;
-  letter-spacing: -0.045em;
-  margin: 0;
-}
-.statement .sig {
-  font-weight: 400;
-}
-.statement .offset:first-of-type {
-  margin-top: clamp(0.6rem, 2vw, 1.6rem);
-}
-.statement .offset {
-  padding-left: clamp(0px, 6vw, 6vw);
-}
-.lede {
-  margin: clamp(2.4rem, 6vh, 4rem) 0 0;
-  max-width: 46ch;
-  letter-spacing: 0.14em;
-  line-height: 1.9;
-}
-
-.scroll-hint {
-  position: absolute;
-  bottom: clamp(1.6rem, 5vh, 3rem);
-  left: var(--edge);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.7rem;
-}
-.hint-line {
-  display: block;
-  width: 1px;
-  height: 54px;
-  background: var(--ink-ghost);
+/* -- HERO ------------------------------------------------------------------ */
+.hero {
+  padding: clamp(4.5rem, 12vh, 8rem) 0 0;
+  text-align: center;
   overflow: hidden;
-  position: relative;
 }
-.hint-line i {
-  position: absolute;
-  inset: 0;
-  background: var(--signal);
-  animation: scroll-hint 2.6s var(--ease-out) infinite;
+.hero .h1 {
+  margin-top: 0.4rem;
 }
-
-/* -- Cena 02 -------------------------------------------------------------- */
-.manifesto {
-  min-height: 100vh;
+.hero-sub {
+  max-width: 40ch;
+  margin: 1.4rem auto 0;
+}
+.hero-actions {
   display: flex;
   align-items: center;
-}
-.mani-stack {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(1.4rem, 5vh, 3.4rem);
-}
-.mani-line {
-  font-size: clamp(1.9rem, 6vw, 5rem);
-  font-weight: 300;
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  max-width: 20ch;
-  margin: 0;
-}
-.mani-line.small {
-  font-size: clamp(1.3rem, 3.4vw, 2.6rem);
-  font-weight: 300;
-  line-height: 1.3;
-  max-width: 30ch;
-  color: var(--ink-dim);
-}
-.mani-line.right {
-  align-self: flex-end;
-  text-align: right;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 1.8rem);
+  margin-top: 2.2rem;
 }
 
-/* -- Cena 03 -------------------------------------------------------------- */
-.proc-intro {
-  color: var(--ink-faint);
-  margin: 0 0 clamp(3rem, 8vh, 6rem);
+.hero-stage {
+  margin-top: clamp(3rem, 7vh, 5rem);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--edge);
 }
-.proc-list {
-  border-top: 1px solid var(--line);
-}
-.proc-row {
-  display: grid;
-  grid-template-columns: clamp(4rem, 12vw, 11rem) minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: clamp(1rem, 4vw, 3rem);
-  align-items: baseline;
-  padding: clamp(2rem, 6vh, 4rem) 0;
-  border-bottom: 1px solid var(--line);
-}
-.proc-n {
-  font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-  color: var(--signal);
+.mock {
+  width: min(920px, 100%);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-lift);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
   will-change: transform;
 }
-.proc-t {
-  font-size: clamp(1.8rem, 4.6vw, 3.6rem);
-  font-weight: 300;
-  letter-spacing: -0.03em;
-  margin: 0;
+.mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 44px;
+  padding: 0 1rem;
+  background: #f5f5f7;
+  border-bottom: 1px solid var(--hair);
 }
-.proc-d {
-  font-size: clamp(0.98rem, 1.3vw, 1.15rem);
-  line-height: 1.7;
-  color: var(--ink-dim);
-  margin: 0;
-  max-width: 44ch;
+.mock-bar .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #d5d5da;
+}
+.mock-url {
+  margin: 0 auto;
+  padding: 0.28rem 1.2rem;
+  min-width: 40%;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--ink-3);
+  border: 1px solid var(--hair);
+}
+.mock-body {
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+  text-align: left;
+}
+.mock-band {
+  border-radius: 14px;
+  padding: clamp(1.6rem, 4vw, 2.6rem);
+  background: linear-gradient(135deg, #0071e3, #42a5f5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.mock-band-title {
+  width: 55%;
+  height: 18px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+}
+.mock-band-text {
+  width: 78%;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.mock-band-btn {
+  margin-top: 0.4rem;
+  width: 120px;
+  height: 30px;
+  border-radius: 980px;
+  background: #fff;
+}
+.mock-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+.mock-tile {
+  height: clamp(70px, 10vw, 110px);
+  border-radius: 12px;
+  background: #f0f0f3;
+}
+.mock-lines {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.mock-lines span {
+  height: 9px;
+  border-radius: 5px;
+  background: #ececef;
+}
+.mock-lines span:nth-child(1) {
+  width: 90%;
+}
+.mock-lines span:nth-child(2) {
+  width: 96%;
+}
+.mock-lines span:nth-child(3) {
+  width: 60%;
 }
 
-/* -- Cena 04 -------------------------------------------------------------- */
-.cap-list {
+/* -- Seção: cabeçalho ------------------------------------------------------ */
+.section-head {
+  margin-bottom: clamp(2.5rem, 6vh, 4rem);
+}
+.section-head .sub {
+  margin-top: 0.8rem;
+}
+.section-head.center {
+  text-align: center;
+  max-width: 40ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.section-head.center .sub {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* -- Bento ----------------------------------------------------------------- */
+.bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(0.9rem, 1.6vw, 1.4rem);
+}
+.tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--bg-alt);
+  padding: clamp(1.8rem, 3vw, 2.6rem);
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
+}
+.tile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-soft);
+}
+.tile-wide {
+  grid-column: 1 / -1;
+  min-height: 300px;
+}
+.tile-dark {
+  background: var(--dark-2);
+  color: var(--on-dark);
+}
+.tile-alt {
+  background: #eef1f6;
+}
+.tile-text {
+  max-width: 42ch;
+  position: relative;
+  z-index: 2;
+}
+.tile-sub {
+  margin: 0.7rem 0 1.1rem;
+  color: var(--ink-2);
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+.tile-dark .tile-sub {
+  color: var(--on-dark-2);
+}
+.link-blue.on-dark {
+  color: var(--link-on-dark);
+}
+
+/* Arte abstrata dos tiles */
+.tile-art {
+  position: absolute;
+  pointer-events: none;
+}
+.art-window {
+  right: -40px;
+  bottom: -30px;
+  width: 260px;
+  height: 180px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  transform: rotate(-6deg);
+}
+.art-window span {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.art-window span:nth-child(1) {
+  width: 60%;
+  background: var(--link-on-dark);
+  opacity: 0.6;
+}
+.art-window span:nth-child(2) {
+  width: 85%;
+}
+.art-window span:nth-child(3) {
+  width: 45%;
+}
+.art-shield {
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  background: linear-gradient(160deg, #34c759, #30b350);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 24px rgba(52, 199, 89, 0.28);
+}
+.art-shield span {
+  width: 34px;
+  height: 18px;
+  border-left: 5px solid #fff;
+  border-bottom: 5px solid #fff;
+  transform: rotate(-45deg) translateY(-4px);
+  border-radius: 2px;
+}
+.art-orbit {
+  right: 1.2rem;
+  bottom: 1.2rem;
+  width: 100px;
+  height: 100px;
+}
+.art-orbit span {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 113, 227, 0.25);
+}
+.art-orbit span:nth-child(2) {
+  inset: 22px;
+  border-color: rgba(0, 113, 227, 0.45);
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.15), transparent 70%);
+}
+.art-chat {
+  right: -20px;
+  bottom: -18px;
+  display: flex;
+  gap: 12px;
+}
+.art-chat span {
+  width: 96px;
+  height: 62px;
+  border-radius: 20px 20px 20px 4px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+.art-chat span:nth-child(2) {
+  background: var(--blue);
+  border-radius: 20px 20px 4px 20px;
+  transform: translateY(26px);
+}
+
+/* -- Como funciona / passos ----------------------------------------------- */
+.steps {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--line);
-}
-.cap-row {
-  border-bottom: 1px solid var(--line);
-}
-.cap-link {
   display: grid;
-  grid-template-columns: clamp(3rem, 6vw, 5rem) minmax(0, auto) minmax(0, 1fr) 2rem;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2.4rem);
-  padding: clamp(1.6rem, 4.5vh, 3rem) 0;
-  transition: padding-left 0.6s var(--ease-spring);
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(1.4rem, 3vw, 2.4rem);
 }
-.cap-idx {
-  color: var(--ink-faint);
-  transition: color 0.4s var(--ease-out);
+.step-n {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--blue);
+  letter-spacing: -0.02em;
 }
-.cap-k {
-  font-size: clamp(2.2rem, 8vw, 6.5rem);
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  transition: color 0.4s var(--ease-out);
+.step-t {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0.7rem 0 0.4rem;
 }
-.cap-d {
-  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
-  line-height: 1.6;
-  color: var(--ink-faint);
-  opacity: 0.55;
-  max-width: 40ch;
-  transform: translateX(-8px);
-  transition:
-    opacity 0.5s var(--ease-out),
-    transform 0.6s var(--ease-spring),
-    color 0.4s var(--ease-out);
-}
-.cap-arr {
-  justify-self: end;
-  font-size: 1.3rem;
-  color: var(--signal);
-  opacity: 0;
-  transform: translateX(-10px);
-  transition:
-    opacity 0.5s var(--ease-out),
-    transform 0.6s var(--ease-spring);
-}
-.cap-link:hover {
-  padding-left: clamp(0.6rem, 2vw, 2rem);
-}
-.cap-link:hover .cap-idx {
-  color: var(--signal);
-}
-.cap-link:hover .cap-d {
-  opacity: 1;
-  color: var(--ink-dim);
-  transform: translateX(0);
-}
-.cap-link:hover .cap-arr {
-  opacity: 1;
-  transform: translateX(0);
+.step-d {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
-/* -- Cena 05 -------------------------------------------------------------- */
-.fechamento {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* -- Planos ---------------------------------------------------------------- */
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1rem, 2vw, 1.6rem);
+  align-items: start;
 }
-.fech-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.plan {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius-card);
+  padding: clamp(1.8rem, 3vw, 2.4rem);
 }
-.fech-title {
-  font-size: clamp(2.6rem, 10vw, 9.5rem);
-  font-weight: 250;
-  line-height: 0.94;
-  letter-spacing: -0.045em;
+.plan-featured {
+  border-color: transparent;
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-6px);
+}
+.plan-tag {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.28rem 0.85rem;
+  border-radius: 980px;
+}
+.plan-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0;
 }
-.fech-title em {
-  font-weight: 400;
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.7rem 0 1.4rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--hair);
 }
-.fech-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  align-self: flex-start;
-  margin-top: clamp(2.4rem, 6vh, 4rem);
-  padding: 1.1rem 0;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+.plan-amount {
+  font-size: 1.5rem;
+  font-weight: 600;
   color: var(--ink);
-  border-bottom: 1px solid var(--signal);
-  will-change: transform;
-  transition:
-    gap 0.5s var(--ease-spring),
-    color 0.4s var(--ease-out);
 }
-.fech-cta:hover {
-  gap: 1.6rem;
-  color: var(--signal);
+.plan-period {
+  font-size: 0.9rem;
+  color: var(--ink-3);
 }
-.fech-arr {
-  color: var(--signal);
+.plan-feats {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
-
-.hud-foot {
+.plan-feats li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding-top: clamp(3rem, 8vh, 5rem);
-  border-top: 1px solid var(--line);
+  gap: 0.6rem;
+  font-size: 1rem;
+  color: var(--ink);
 }
-.foot-nav {
-  display: flex;
-  gap: clamp(1rem, 3vw, 2.2rem);
+.check {
+  color: var(--blue);
+  font-weight: 700;
 }
-.foot-nav a:hover {
-  color: var(--signal);
-}
-.dim {
-  color: var(--ink-faint);
+.plan-cta {
+  width: 100%;
 }
 
-@media (max-width: 760px) {
-  .proc-row {
+/* -- CTA final ------------------------------------------------------------- */
+.cta .h2 {
+  max-width: 22ch;
+  margin: 0 auto;
+}
+.cta-btn {
+  padding: 0.85rem 1.8rem;
+  font-size: 1.15rem;
+}
+
+/* -- Responsivo ------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .plans {
     grid-template-columns: 1fr;
-    gap: 0.6rem;
+    max-width: 420px;
+    margin: 0 auto;
   }
-  .cap-link {
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-      'idx k'
-      'd d';
-    row-gap: 0.8rem;
-  }
-  .cap-idx {
-    grid-area: idx;
-  }
-  .cap-k {
-    grid-area: k;
-  }
-  .cap-d {
-    grid-area: d;
-    opacity: 0.7;
+  .plan-featured {
     transform: none;
   }
-  .cap-arr {
-    display: none;
+}
+@media (max-width: 640px) {
+  .bento {
+    grid-template-columns: 1fr;
   }
-  .statement .offset {
-    padding-left: 0;
+  .tile-wide {
+    grid-column: auto;
+  }
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .hero-actions {
+    flex-direction: column;
   }
 }
 </style>

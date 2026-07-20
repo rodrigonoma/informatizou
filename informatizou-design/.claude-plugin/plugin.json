@@ -1,0 +1,11 @@
+{
+  "name": "informatizou-design",
+  "description": "Sistema criativo da Informatizou para concepção, desenvolvimento e revisão de sites institucionais premium e não genéricos.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Informatizou"
+  },
+  "homepage": "https://www.informatizou.com.br",
+  "repository": "https://github.com/informatizou/informatizou-design",
+  "license": "UNLICENSED"
+}

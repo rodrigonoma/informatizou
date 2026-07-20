@@ -1,6 +1,6 @@
 // Site institucional público (informatizou.com.br) — SSR para SEO.
-// "Informatizou Motion System": experiência viva, monocromática, com um único
-// sinal âmbar. Tipografia protagonista (Bricolage Grotesque + JetBrains Mono).
+// Direção: Apple Human Interface — claridade, deferência, profundidade.
+// Tipografia: pilha do sistema (SF Pro no ecossistema Apple), sem fontes externas.
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   ssr: true,
@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     head: {
-      title: 'Informatizou — Presença digital viva',
+      title: 'Informatizou — Sites profissionais, sem complicação',
       htmlAttrs: { lang: 'pt-BR' },
       meta: [
         { charset: 'utf-8' },
@@ -17,22 +17,17 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'A Informatizou constrói presença digital viva para negócios: criação, hospedagem e manutenção de sites com uma experiência que ninguém esquece.',
+            'A Informatizou cria, hospeda e mantém sites profissionais para o seu negócio. Você recebe uma demonstração antes de decidir. Simples assim.',
         },
-        { name: 'theme-color', content: '#0A0A0B' },
+        { name: 'theme-color', content: '#ffffff' },
         { name: 'robots', content: 'index, follow' },
-        { property: 'og:title', content: 'Informatizou — Presença digital viva' },
-        { property: 'og:description', content: 'Não fazemos sites. Construímos presença.' },
+        { property: 'og:title', content: 'Informatizou — Sites profissionais, sem complicação' },
+        {
+          property: 'og:description',
+          content: 'Criação, hospedagem e manutenção de sites. Veja uma demonstração antes de decidir.',
+        },
         { property: 'og:type', content: 'website' },
         { property: 'og:locale', content: 'pt_BR' },
-      ],
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=JetBrains+Mono:wght@400;500&display=swap',
-        },
       ],
     },
   },
