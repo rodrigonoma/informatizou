@@ -43,3 +43,6 @@ infrastructure/backups/*.tar.gz
 # Playwright
 test-results/
 playwright-report/
+
+# Windows alternate data stream metadata
+*:Zone.Identifier
