@@ -53,13 +53,35 @@ interface DayRow {
   close: string;
 }
 
-const { api } = usePortal();
+const { api, connectWhatsapp } = usePortal();
+const runtime = useRuntimeConfig();
+const metaAppId = runtime.public.metaAppId as string;
+const esConfigId = runtime.public.whatsappEsConfigId as string;
 const loading = ref(true);
 const phoneNumberId = ref('');
 const missing = ref(false);
 const saved = ref(false);
 const saving = ref(false);
 const error = ref('');
+const connecting = ref(false);
+const connectError = ref('');
+
+async function onConnected(payload: { code: string; phoneNumberId: string; wabaId: string }) {
+  connectError.value = '';
+  connecting.value = true;
+  try {
+    await connectWhatsapp(payload);
+    const configs = await api<BotConfig[]>('/portal/whatsapp/config');
+    if (configs.length) {
+      missing.value = false;
+      loadInto(configs[0]!);
+    }
+  } catch {
+    connectError.value = 'Não foi possível concluir a conexão. Tente novamente.';
+  } finally {
+    connecting.value = false;
+  }
+}
 
 const form = ref({
   businessName: '',
@@ -178,10 +200,25 @@ async function save() {
   <div>
     <h2 class="ph">Chatbot do WhatsApp</h2>
     <p v-if="loading" class="muted">Carregando…</p>
-    <p v-else-if="missing" class="muted box win-well">
-      📞 Seu número de WhatsApp ainda está sendo configurado pela Informatizou. Assim que estiver pronto,
-      você poderá ajustar o fluxo de atendimento por aqui.
-    </p>
+    <template v-else-if="missing">
+      <!-- Self-service: conectar o próprio número (Embedded Signup). -->
+      <div v-if="metaAppId && esConfigId" class="box win-well connect">
+        <p class="ct">Conecte o WhatsApp do seu negócio para começar a atender com o chatbot.</p>
+        <p class="ct sub">Você entra com o Facebook e escolhe (ou cria) o número do seu WhatsApp Business — leva poucos minutos.</p>
+        <PortalConnectWhatsApp
+          :app-id="metaAppId"
+          :config-id="esConfigId"
+          @connected="onConnected"
+          @error="connectError = $event"
+        />
+        <p v-if="connecting" class="muted sm">Concluindo a conexão…</p>
+        <p v-if="connectError" class="er">{{ connectError }}</p>
+      </div>
+      <p v-else class="muted box win-well">
+        📞 Seu número de WhatsApp ainda está sendo configurado pela Informatizou. Assim que estiver pronto,
+        você poderá ajustar o fluxo de atendimento por aqui.
+      </p>
+    </template>
     <form v-else class="form" @submit.prevent="save">
       <p class="pn">Número: <b>{{ phoneNumberId }}</b></p>
 
@@ -273,6 +310,9 @@ async function save() {
 .muted { color: #303030; font-size: 12px; line-height: 1.5; }
 .sm { font-size: 11px; }
 .box { background: #fff; padding: 14px; }
+.connect { display: grid; gap: 8px; justify-items: start; }
+.ct { font-size: 13px; margin: 0; }
+.ct.sub { font-size: 11px; color: #303030; }
 .form { display: grid; gap: 14px; }
 .pn { font-size: 12px; margin: 0; }
 .win-fieldset { display: grid; gap: 8px; }

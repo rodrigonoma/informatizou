@@ -107,6 +107,10 @@ services:
       NUXT_PUBLIC_API_BASE: https://api.informatizou.com.br
       # Login com Google (opcional): defina GOOGLE_OAUTH_CLIENT_ID no .env para exibir o botão.
       NUXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      # Embedded Signup do WhatsApp: o botão "Conectar meu WhatsApp" só aparece
+      # quando WHATSAPP_ES_CONFIG_ID estiver definido no .env (após criar a config na Meta).
+      NUXT_PUBLIC_META_APP_ID: ${WHATSAPP_APP_ID:-}
+      NUXT_PUBLIC_WHATSAPP_ES_CONFIG_ID: ${WHATSAPP_ES_CONFIG_ID:-}
     ports:
       - '127.0.0.1:18030:3000'
     restart: always

@@ -133,5 +133,25 @@ export function usePortal() {
     customer.value = null;
   }
 
-  return { token, customer, api, login, register, loginWithGoogle, forgot, resetPassword, logout, fetchMe };
+  function connectWhatsapp(payload: {
+    code: string;
+    phoneNumberId: string;
+    wabaId: string;
+  }): Promise<{ ok: boolean; phoneNumberId: string }> {
+    return api('/portal/whatsapp/connect', { method: 'POST', body: payload });
+  }
+
+  return {
+    token,
+    customer,
+    api,
+    login,
+    register,
+    loginWithGoogle,
+    forgot,
+    resetPassword,
+    connectWhatsapp,
+    logout,
+    fetchMe,
+  };
 }

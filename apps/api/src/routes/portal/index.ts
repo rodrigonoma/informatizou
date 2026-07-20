@@ -417,6 +417,73 @@ export async function portalRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // POST /portal/whatsapp/connect — Embedded Signup: o cliente conecta o próprio
+  // número. Troca o code por token, inscreve o app na WABA do cliente e cria a
+  // config vinculada a ele (o envio já usa esse token — ver sendWhatsappReply).
+  r.post(
+    '/whatsapp/connect',
+    {
+      ...guard,
+      schema: {
+        tags: ['portal'],
+        summary: 'Conecta o WhatsApp do cliente (Embedded Signup)',
+        body: z.object({
+          code: z.string().min(5),
+          phoneNumberId: z.string().min(1),
+          wabaId: z.string().min(1),
+        }),
+      },
+    },
+    async (req, reply) => {
+      if (!env.WHATSAPP_APP_ID || !env.WHATSAPP_APP_SECRET) {
+        return reply.code(400).send({ error: 'Bad Request', message: 'Conexão via Meta não configurada no servidor.' });
+      }
+      const customerId = req.portalCustomer!.sub;
+      const { code, phoneNumberId, wabaId } = req.body;
+
+      // 1) Troca o code pelo token do negócio do cliente.
+      const tokenUrl =
+        `https://graph.facebook.com/${env.WHATSAPP_API_VERSION}/oauth/access_token` +
+        `?client_id=${encodeURIComponent(env.WHATSAPP_APP_ID)}` +
+        `&client_secret=${encodeURIComponent(env.WHATSAPP_APP_SECRET)}` +
+        `&code=${encodeURIComponent(code)}`;
+      const tokenRes = await fetch(tokenUrl);
+      const tokenJson = (await tokenRes.json()) as { access_token?: string; error?: unknown };
+      const accessToken = tokenJson.access_token;
+      if (!accessToken) {
+        req.log.warn({ tokenJson }, 'falha ao trocar code do embedded signup');
+        return reply.code(400).send({ error: 'Bad Request', message: 'Não foi possível validar a conexão com a Meta.' });
+      }
+
+      // 2) Inscreve o nosso app na WABA do cliente (para receber os webhooks).
+      await fetch(
+        `https://graph.facebook.com/${env.WHATSAPP_API_VERSION}/${encodeURIComponent(wabaId)}/subscribed_apps` +
+          `?access_token=${encodeURIComponent(accessToken)}`,
+        { method: 'POST' },
+      ).catch((e) => req.log.warn({ err: (e as Error).message }, 'subscribed_apps falhou'));
+
+      // 3) Cria/atualiza a config do número, vinculada ao cliente.
+      const customer = await p.customer.findUnique({ where: { id: customerId } });
+      const cfg = await p.whatsappBotConfig.upsert({
+        where: { phoneNumberId },
+        create: {
+          phoneNumberId,
+          wabaId,
+          accessToken,
+          customerId,
+          businessName: customer?.name ?? 'Meu negócio',
+          greeting: 'Olá! 👋 Obrigado por chamar a gente. Como posso ajudar?',
+          fallbackMessage: 'Recebi sua mensagem! Em instantes um atendente responde.',
+          handoffKeyword: 'atendente',
+          aiEnabled: true,
+          enabled: true,
+        },
+        update: { wabaId, accessToken, customerId },
+      });
+      return { ok: true, phoneNumberId: cfg.phoneNumberId };
+    },
+  );
+
   // GET /portal/whatsapp/conversations
   r.get(
     '/whatsapp/conversations',

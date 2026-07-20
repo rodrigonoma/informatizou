@@ -87,6 +87,8 @@ export const envSchema = z.object({
   WHATSAPP_API_VERSION: z.string().default('v21.0'),
   WHATSAPP_VERIFY_TOKEN: z.string().default(''),
   WHATSAPP_APP_SECRET: z.string().default(''),
+  // Embedded Signup (onboarding self-service do WhatsApp do cliente).
+  WHATSAPP_APP_ID: z.string().default(''),
 
   DEMO_EXPIRATION_DAYS: numberFromString.default(10),
   DEFAULT_MINIMUM_DEMO_SCORE: numberFromString.default(80),

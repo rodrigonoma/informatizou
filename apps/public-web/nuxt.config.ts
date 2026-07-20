@@ -13,6 +13,9 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:4000',
       // Client ID do Google (login social). Vazio = botão do Google oculto.
       googleClientId: process.env.NUXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+      // Embedded Signup do WhatsApp (Meta). Vazio = botão "Conectar" oculto.
+      metaAppId: process.env.NUXT_PUBLIC_META_APP_ID || '',
+      whatsappEsConfigId: process.env.NUXT_PUBLIC_WHATSAPP_ES_CONFIG_ID || '',
     },
   },
   app: {
