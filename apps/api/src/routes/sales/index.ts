@@ -305,7 +305,12 @@ export async function salesRoutes(app: FastifyInstance): Promise<void> {
       items: await app.prisma.customer.findMany({
         where: { deletedAt: null },
         orderBy: { createdAt: 'desc' },
-        include: { subscriptions: true, sites: true },
+        include: {
+          subscriptions: true,
+          sites: true,
+          whatsappConfigs: { select: { phoneNumberId: true, label: true, businessName: true } },
+        },
+        omit: { passwordHash: true }, // nunca expor o hash de senha do painel
       }),
     }),
   );
@@ -320,6 +325,7 @@ export async function salesRoutes(app: FastifyInstance): Promise<void> {
       const c = await app.prisma.customer.findUnique({
         where: { id: request.params.id },
         include: { subscriptions: { include: { productPlan: true } }, sites: true, onboardingTasks: { orderBy: { order: 'asc' } }, proposals: true },
+        omit: { passwordHash: true }, // nunca expor o hash de senha do painel
       });
       if (!c || c.deletedAt) return reply.code(404).send({ error: 'Not Found' });
       return c;
