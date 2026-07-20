@@ -13,7 +13,7 @@ const produtos = desktopApps.filter((a) => a.kind === 'product');
     <div class="pv">
       <!-- Cabeçalho -->
       <div class="pv-hero">
-        <span class="pv-ico" :style="{ background: app.accent }" v-html="app.glyph" />
+        <span class="pv-ico" v-html="app.glyph" />
         <div>
           <h1 class="pv-name">{{ app.name }}</h1>
           <p v-if="app.tagline" class="pv-tag">{{ app.tagline }}</p>
@@ -31,7 +31,7 @@ const produtos = desktopApps.filter((a) => a.kind === 'product');
         <p class="pv-p">Dê um duplo clique nos ícones (ou toque, no celular) para abrir cada produto:</p>
         <div class="pv-list">
           <button v-for="p in produtos" :key="p.id" class="pv-item" @click="open(p.id, { w: p.w, h: p.h })">
-            <span class="pv-item-ico" :style="{ background: p.accent }" v-html="p.glyph" />
+            <span class="pv-item-ico" v-html="p.glyph" />
             {{ p.name }}
           </button>
         </div>
@@ -84,17 +84,16 @@ const produtos = desktopApps.filter((a) => a.kind === 'product');
   gap: 11px;
 }
 .pv-ico {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   flex: none;
   display: grid;
   place-items: center;
-  color: #fff;
-  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.35), inset 1px 1px 0 rgba(255, 255, 255, 0.5);
 }
 .pv-ico :deep(svg) {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
 }
 .pv-name {
   margin: 0;
@@ -177,11 +176,11 @@ const produtos = desktopApps.filter((a) => a.kind === 'product');
   flex: none;
   display: grid;
   place-items: center;
-  color: #fff;
 }
 .pv-item-ico :deep(svg) {
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
 }
 .pv-fields {
   display: grid;

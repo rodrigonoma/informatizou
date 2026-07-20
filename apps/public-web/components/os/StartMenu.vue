@@ -21,16 +21,16 @@ function desligar() {
     <div class="start-side"><span>Informatizou<b>OS</b></span></div>
     <div class="start-items">
       <button v-for="p in produtos" :key="p.id" class="mi" @click="launch(p.id)">
-        <span class="mi-ico" :style="{ background: p.accent }" v-html="p.glyph" />
+        <span class="mi-ico" v-html="p.glyph" />
         <span class="mi-label">{{ p.name }}</span>
       </button>
       <div class="mi-sep" />
       <button class="mi" @click="launch('bem-vindo')">
-        <span class="mi-ico" :style="{ background: '#3b9dff' }" v-html="getApp('bem-vindo')?.glyph" />
+        <span class="mi-ico" v-html="getApp('bem-vindo')?.glyph" />
         <span class="mi-label">Leia-me</span>
       </button>
       <button class="mi" @click="launch('contato')">
-        <span class="mi-ico" :style="{ background: '#34c759' }" v-html="getApp('contato')?.glyph" />
+        <span class="mi-ico" v-html="getApp('contato')?.glyph" />
         <span class="mi-label">Contato</span>
       </button>
       <div class="mi-sep" />
@@ -98,12 +98,11 @@ function desligar() {
   flex: none;
   display: grid;
   place-items: center;
-  color: #fff;
-  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.3), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
 }
 .mi-ico :deep(svg) {
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
 }
 .mi-power {
   background: #b00;

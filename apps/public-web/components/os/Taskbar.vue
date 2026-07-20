@@ -158,7 +158,7 @@ function onTask(id: string, z: number, minimized: boolean) {
 .task-ico :deep(svg) {
   width: 15px;
   height: 15px;
-  color: #333;
+  image-rendering: pixelated;
 }
 .task-name {
   white-space: nowrap;

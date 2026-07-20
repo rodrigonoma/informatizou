@@ -14,7 +14,7 @@ function onClick() {
 
 <template>
   <button class="ic" @dblclick="launch" @click="onClick" :aria-label="`Abrir ${app.name}`">
-    <span class="ic-tile" :style="{ background: app.accent }" v-html="app.glyph" />
+    <span class="ic-tile" v-html="app.glyph" />
     <span class="ic-label">{{ app.name }}</span>
   </button>
 </template>
@@ -29,16 +29,16 @@ function onClick() {
   padding: 4px 2px;
 }
 .ic-tile {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
-  color: #fff;
-  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.45);
 }
 .ic-tile :deep(svg) {
-  width: 22px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+  filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.35));
 }
 .ic-label {
   font-size: 12px;

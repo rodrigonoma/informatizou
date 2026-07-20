@@ -112,12 +112,12 @@ function onUp() {
   width: 15px;
   height: 15px;
   display: block;
-  color: #fff;
 }
 .tb-ico :deep(svg) {
   width: 15px;
   height: 15px;
   display: block;
+  image-rendering: pixelated;
 }
 .tb-name {
   flex: 1;
