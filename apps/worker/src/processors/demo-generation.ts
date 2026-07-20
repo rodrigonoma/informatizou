@@ -5,7 +5,12 @@ import { buildDemoContent, selectTemplate, designTokensFor } from '@informatizou
 import { slugify } from '@informatizou/shared';
 import { enqueue, QUEUE_NAMES } from '@informatizou/queue';
 import { loadEnv } from '@informatizou/config';
-import { getAiProvider, type BusinessContext } from '@informatizou/providers';
+import {
+  getAiProvider,
+  getStitchProvider,
+  buildStitchPrompt,
+  type BusinessContext,
+} from '@informatizou/providers';
 import { LeadStatus, DemoSiteStatus } from '@informatizou/shared';
 import { createLogger, withCorrelation, type Logger } from '@informatizou/logging';
 
@@ -151,13 +156,46 @@ export async function demoGenerationHandler(job: Job): Promise<unknown> {
     reviewCount: b.reviewCount ?? undefined,
     language: 'pt-BR',
   };
-  const { content, aiUsed, note: aiNote } = await enrichContentWithAi(
-    baseContent,
-    aiContext,
-    template,
-    env,
-    log,
-  );
+  // Motor da demo: Stitch (layout premium) para leads de alto potencial; senão template.
+  const highPotential =
+    (b.reviewCount ?? 0) >= env.STITCH_MIN_REVIEWS && (b.rating ?? 0) >= env.STITCH_MIN_RATING;
+  const stitch = getStitchProvider({
+    ENABLE_STITCH: env.ENABLE_STITCH,
+    GOOGLE_STITCH_SA_B64: env.GOOGLE_STITCH_SA_B64,
+    STITCH_MODEL: env.STITCH_MODEL,
+  });
+
+  let engine = 'template';
+  let stitchHtml: string | null = null;
+  let content: DemoContent = baseContent;
+  let creator = 'demo-generation';
+
+  if (highPotential && stitch.canGenerate()) {
+    try {
+      const prompt = buildStitchPrompt({
+        name: b.name,
+        category: b.category ?? undefined,
+        city: b.city ?? undefined,
+        state: b.state ?? undefined,
+        neighborhood: b.neighborhood ?? undefined,
+        phone: b.phone ?? undefined,
+        whatsapp,
+      });
+      const r = await stitch.generate({ prompt, projectTitle: b.name });
+      stitchHtml = r.html;
+      engine = 'stitch';
+      creator = 'demo-generation+stitch';
+      log.info({ screenId: r.screenId, bytes: r.html.length }, 'demo gerada pelo Stitch (alto potencial)');
+    } catch (err) {
+      log.warn({ err: (err as Error).message }, 'Stitch falhou — usando template determinístico');
+    }
+  }
+
+  if (engine === 'template') {
+    const enriched = await enrichContentWithAi(baseContent, aiContext, template, env, log);
+    content = enriched.content;
+    if (enriched.aiUsed) creator = 'demo-generation+ai';
+  }
 
   const tokens = designTokensFor(template);
   const slug = await uniqueSlug(b.name, b.city);
@@ -167,10 +205,12 @@ export async function demoGenerationHandler(job: Job): Promise<unknown> {
       leadId: lead.id,
       slug,
       template,
+      engine,
       status: DemoSiteStatus.REVIEW_REQUIRED,
       content: content as unknown as object,
       designTokens: tokens as unknown as object,
-      createdBy: aiUsed ? 'demo-generation+ai' : 'demo-generation',
+      ...(stitchHtml ? { html: stitchHtml } : {}),
+      createdBy: creator,
     },
   });
 
@@ -179,7 +219,7 @@ export async function demoGenerationHandler(job: Job): Promise<unknown> {
     data: {
       leadId: lead.id,
       type: 'demo_generated',
-      description: `demo criada (${template}) slug=${slug}${aiNote ? ` — ${aiNote}` : ''}`,
+      description: `demo criada (motor=${engine}, ${template}) slug=${slug}`,
       isAutomated: true,
     },
   });
@@ -194,8 +234,8 @@ export async function demoGenerationHandler(job: Job): Promise<unknown> {
   }
 
   log.info(
-    { demoSiteId: demo.id, slug, template, aiUsed, autonomous: env.AUTONOMOUS_MODE },
+    { demoSiteId: demo.id, slug, template, engine, autonomous: env.AUTONOMOUS_MODE },
     'demo gerada',
   );
-  return { demoSiteId: demo.id, slug, template, aiUsed };
+  return { demoSiteId: demo.id, slug, template, engine };
 }

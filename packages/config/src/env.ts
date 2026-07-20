@@ -45,6 +45,14 @@ export const envSchema = z.object({
   // Login social do painel do cliente (Google). Vazio = SSO desabilitado.
   GOOGLE_OAUTH_CLIENT_ID: z.string().default(''),
 
+  // Geração de layout premium via Google Stitch (leads de alto potencial).
+  ENABLE_STITCH: booleanFromString.default(false),
+  GOOGLE_STITCH_SA_B64: z.string().default(''), // conta de serviço (JSON) em base64
+  STITCH_MODEL: z.string().default('GEMINI_3_1_PRO'), // só o Pro gera HTML
+  // Critério de "alto potencial" para reservar o Stitch (limite ~350/mês).
+  STITCH_MIN_REVIEWS: numberFromString.default(100),
+  STITCH_MIN_RATING: numberFromString.default(4.0),
+
   AI_PROVIDER: z.enum(['anthropic', 'openai', 'local', 'disabled']).default('anthropic'),
   ANTHROPIC_API_KEY: z.string().default(''),
   ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),

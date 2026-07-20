@@ -663,9 +663,11 @@ model DemoSite {
   lead               Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
   slug               String         @unique
   template           String
+  engine             String         @default("template") // "template" | "stitch"
   status             DemoSiteStatus @default(DRAFT)
   content            Json?
   designTokens       Json?
+  html               String?        @db.Text // HTML pronto (motor "stitch")
   publicUrl          String?
   campaignToken      String?
   publishedAt        DateTime?

@@ -302,9 +302,11 @@ export async function demoRoutes(app: FastifyInstance): Promise<void> {
       return {
         available: true,
         slug: demo.slug,
+        engine: demo.engine,
         template: demo.template,
         content: demo.content,
         designTokens: demo.designTokens,
+        html: demo.html, // motor "stitch": HTML pronto para servir cru
         expiresAt: demo.expiresAt,
       };
     },
