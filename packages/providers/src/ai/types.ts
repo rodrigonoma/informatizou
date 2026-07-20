@@ -83,6 +83,29 @@ export interface ContentReviewResult {
   fabricationSuspected: boolean;
 }
 
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+export interface ChatReplyInput {
+  business: BusinessContext;
+  /** Base de conhecimento / FAQ da empresa (texto). */
+  knowledge?: string;
+  tone?: string;
+  /** Histórico recente da conversa, em ordem cronológica. */
+  history: ChatTurn[];
+  /** Mensagem atual do cliente. */
+  userMessage: string;
+}
+
+export interface ChatReplyResult {
+  reply: string;
+  /** true => transferir a conversa para um atendente humano. */
+  handoff: boolean;
+  reason?: string;
+}
+
 export interface AiProvider {
   readonly name: string;
 
@@ -90,4 +113,6 @@ export interface AiProvider {
   generateWebsiteContent(input: WebsiteGenerationInput): Promise<WebsiteContent>;
   generateOutreachMessage(input: OutreachGenerationInput): Promise<OutreachMessageResult>;
   reviewGeneratedContent(input: ContentReviewInput): Promise<ContentReviewResult>;
+  /** Resposta do atendente por IA no WhatsApp (spec §15: sem inventar dados). */
+  generateChatReply(input: ChatReplyInput): Promise<ChatReplyResult>;
 }

@@ -114,6 +114,29 @@ describe('AnthropicAiProvider', () => {
     expect(review.qualityScore).toBe(40);
   });
 
+  it('gera resposta de chat (WhatsApp) com flag de handoff', async () => {
+    const { client, parse } = fakeClient({
+      reply: 'Oi! Como posso ajudar?',
+      handoff: false,
+      reason: '',
+    });
+    const provider = new AnthropicAiProvider({ apiKey: 'k', model: 'claude-opus-4-8', client });
+    const res = await provider.generateChatReply({
+      business,
+      knowledge: 'Horário: seg a sex, 9h às 18h.',
+      history: [{ role: 'user', text: 'oi' }],
+      userMessage: 'vocês abrem sábado?',
+    });
+    expect(res.reply).toBe('Oi! Como posso ajudar?');
+    expect(res.handoff).toBe(false);
+    expect(res.reason).toBeUndefined();
+
+    // histórico + mensagem atual entram como messages; thinking desligado.
+    const args = (parse.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+    expect(args.thinking).toEqual({ type: 'disabled' });
+    expect((args.messages as unknown[]).length).toBe(2);
+  });
+
   it('lança erro quando parsed_output é nulo', async () => {
     const provider = new AnthropicAiProvider({
       apiKey: 'k',

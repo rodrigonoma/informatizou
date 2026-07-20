@@ -72,6 +72,10 @@ export const envSchema = z.object({
   WHATSAPP_ACCESS_TOKEN: z.string().default(''),
   WHATSAPP_PHONE_NUMBER_ID: z.string().default(''),
   WHATSAPP_BUSINESS_ACCOUNT_ID: z.string().default(''),
+  // Cloud API — chatbot: verificação do webhook e assinatura das notificações.
+  WHATSAPP_API_VERSION: z.string().default('v21.0'),
+  WHATSAPP_VERIFY_TOKEN: z.string().default(''),
+  WHATSAPP_APP_SECRET: z.string().default(''),
 
   DEMO_EXPIRATION_DAYS: numberFromString.default(10),
   DEFAULT_MINIMUM_DEMO_SCORE: numberFromString.default(80),

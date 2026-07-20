@@ -24,6 +24,8 @@ export const QUEUE_NAMES = {
   EXPORT_GENERATION: 'export-generation',
   CLEANUP: 'cleanup',
   BACKUP: 'backup',
+  // Chatbot de WhatsApp (Cloud API): processa mensagens recebidas e responde por IA.
+  WHATSAPP_INBOUND: 'whatsapp-inbound',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];

@@ -13,6 +13,8 @@ import type {
   OutreachMessageResult,
   ContentReviewInput,
   ContentReviewResult,
+  ChatReplyInput,
+  ChatReplyResult,
 } from './types.js';
 
 export interface AnthropicConfig {
@@ -72,6 +74,12 @@ const reviewSchema = z.object({
   qualityScore: z.number(),
   issues: z.array(z.string()),
   fabricationSuspected: z.boolean(),
+});
+
+const chatReplySchema = z.object({
+  reply: z.string(),
+  handoff: z.boolean(),
+  reason: z.string(),
 });
 
 function verifiedFactsBlock(b: BusinessContext): string {
@@ -208,5 +216,45 @@ export class AnthropicAiProvider implements AiProvider {
       JSON.stringify(input.content),
     ].join('\n');
     return this.parse(system, prompt, reviewSchema);
+  }
+
+  async generateChatReply(input: ChatReplyInput): Promise<ChatReplyResult> {
+    const system = [
+      'Você é o atendente virtual da empresa abaixo, respondendo clientes no WhatsApp.',
+      'Escreva em português do Brasil, com mensagens curtas, claras e cordiais (é WhatsApp).',
+      input.tone ? `Tom da marca: ${input.tone}.` : '',
+      '',
+      'REGRAS OBRIGATÓRIAS (spec §15):',
+      '- Use SOMENTE os dados verificados e a base de conhecimento fornecidos abaixo.',
+      '- É TERMINANTEMENTE PROIBIDO inventar preços, promoções, prazos, horários, produtos, serviços ou qualquer informação não fornecida.',
+      '- Se não tiver a informação, diga com sinceridade que vai verificar e ofereça encaminhar para um atendente.',
+      '- Nunca prometa o que não está nos dados.',
+      '',
+      'ENCAMINHAR PARA HUMANO (handoff=true) quando: o cliente pedir para falar com uma pessoa/atendente; for uma reclamação séria; quiser fechar negócio/pagamento; ou pedir algo fora do seu escopo. Nesses casos, avise que vai chamar um atendente.',
+      '',
+      'DADOS VERIFICADOS DA EMPRESA:',
+      verifiedFactsBlock(input.business),
+      input.knowledge ? `\nBASE DE CONHECIMENTO:\n${input.knowledge}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const messages = [
+      ...input.history.map((t) => ({ role: t.role, content: t.text })),
+      { role: 'user' as const, content: input.userMessage },
+    ];
+
+    const res = await this.messages.parse({
+      model: this.config.model,
+      max_tokens: this.config.maxTokens ?? 1500,
+      system,
+      thinking: { type: 'disabled' },
+      output_config: { format: zodOutputFormat(chatReplySchema) },
+      messages,
+    });
+    const parsed = (res as { parsed_output?: unknown }).parsed_output;
+    if (parsed == null) throw new Error('Anthropic não retornou resposta estruturada do chat');
+    const out = chatReplySchema.parse(parsed);
+    return { reply: out.reply, handoff: out.handoff, reason: out.reason || undefined };
   }
 }

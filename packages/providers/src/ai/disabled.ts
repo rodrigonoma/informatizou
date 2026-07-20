@@ -9,6 +9,8 @@ import type {
   OutreachMessageResult,
   ContentReviewInput,
   ContentReviewResult,
+  ChatReplyInput,
+  ChatReplyResult,
 } from './types.js';
 
 /** Provider de IA desabilitado — recusa qualquer geração. */
@@ -25,6 +27,9 @@ export class DisabledAiProvider implements AiProvider {
     return Promise.reject(new ProviderDisabledError('ai'));
   }
   reviewGeneratedContent(_input: ContentReviewInput): Promise<ContentReviewResult> {
+    return Promise.reject(new ProviderDisabledError('ai'));
+  }
+  generateChatReply(_input: ChatReplyInput): Promise<ChatReplyResult> {
     return Promise.reject(new ProviderDisabledError('ai'));
   }
 }
