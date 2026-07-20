@@ -64,12 +64,20 @@ const statusColor: Record<string, string> = {
 
       <!-- Nova campanha -->
       <form
-        class="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-5"
+        class="mt-6 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-6"
         @submit.prevent="createMutation.mutate()"
       >
         <input v-model="form.name" required placeholder="Nome" class="rounded-lg border border-slate-300 px-3 py-2 text-sm sm:col-span-2" />
         <input v-model="form.segment" required placeholder="Segmento (ex.: padarias)" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
         <input v-model="form.location" required placeholder="Local (ex.: Ribeirão Preto, SP)" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <select
+          v-model="form.provider"
+          class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          title="Fonte dos dados"
+        >
+          <option value="fake">Dados de teste (fake)</option>
+          <option value="google_places">Google Places (real)</option>
+        </select>
         <button
           type="submit"
           :disabled="createMutation.isPending.value"
@@ -78,6 +86,9 @@ const statusColor: Record<string, string> = {
           {{ createMutation.isPending.value ? 'Criando…' : 'Criar campanha' }}
         </button>
       </form>
+      <p v-if="form.provider === 'google_places'" class="mt-2 text-xs text-amber-700">
+        ⚠ Google Places consome a API paga (cobrança por busca). Requer <code>GOOGLE_PLACES_API_KEY</code> configurada no servidor.
+      </p>
       <p v-if="error" class="mt-2 text-sm text-red-600">{{ error }}</p>
 
       <!-- Lista -->
