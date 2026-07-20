@@ -1,3 +1,5 @@
+import { ICON_SVG } from './pixelIcons';
+
 export interface AppFeature {
   t: string;
   d: string;
@@ -23,17 +25,8 @@ export interface OsApp {
 const MAIL = 'mailto:contato@informatizou.com.br';
 const mail = (assunto: string) => `${MAIL}?subject=${encodeURIComponent(assunto)}`;
 
-// Ícones (linha, 24x24, herdam currentColor).
-const G = {
-  site: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="10" fill="#c3c7cb" stroke="#000"/><rect x="2" y="2" width="12" height="8" fill="#fff"/><rect x="2" y="2" width="12" height="2" fill="#0a5bd3"/><rect x="3" y="5" width="8" height="1" fill="#8a8a8a"/><rect x="3" y="7" width="9" height="1" fill="#8a8a8a"/><rect x="6" y="11" width="4" height="2" fill="#9a9ea3" stroke="#000"/><rect x="3" y="13" width="10" height="2" fill="#9a9ea3" stroke="#000"/></svg>',
-  chat: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="2" width="14" height="9" fill="#25d366" stroke="#000"/><rect x="3" y="10" width="4" height="3" fill="#25d366" stroke="#000"/><rect x="4" y="6" width="2" height="2" fill="#fff"/><rect x="7" y="6" width="2" height="2" fill="#fff"/><rect x="10" y="6" width="2" height="2" fill="#fff"/></svg>',
-  mail: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10" fill="#fff" stroke="#000"/><polyline points="1,3 8,9 15,3" fill="none" stroke="#000"/></svg>',
-  server: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="2" y="2" width="12" height="5" fill="#c3c7cb" stroke="#000"/><rect x="2" y="9" width="12" height="5" fill="#c3c7cb" stroke="#000"/><rect x="4" y="4" width="1" height="1" fill="#2ecc40"/><rect x="4" y="11" width="1" height="1" fill="#2ecc40"/><rect x="7" y="4" width="5" height="1" fill="#8a8a8a"/><rect x="7" y="11" width="5" height="1" fill="#8a8a8a"/></svg>',
-  gear: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="6" y="1" width="4" height="14" fill="#9a9ea3"/><rect x="1" y="6" width="14" height="4" fill="#9a9ea3"/><rect x="3" y="3" width="10" height="10" fill="#c3c7cb" stroke="#000"/><rect x="6" y="6" width="4" height="4" fill="#5a5e63" stroke="#000"/></svg>',
-  bag: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="3" y="5" width="10" height="9" fill="#ff5aa0" stroke="#000"/><rect x="5" y="2" width="6" height="1" fill="#000"/><rect x="5" y="3" width="1" height="2" fill="#000"/><rect x="10" y="3" width="1" height="2" fill="#000"/><rect x="5" y="8" width="6" height="1" fill="#fff"/></svg>',
-  doc: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><polygon points="3,1 10,1 13,4 13,15 3,15" fill="#fff" stroke="#000"/><polyline points="10,1 10,4 13,4" fill="none" stroke="#000"/><rect x="5" y="6" width="6" height="1" fill="#0a5bd3"/><rect x="5" y="8" width="6" height="1" fill="#8a8a8a"/><rect x="5" y="10" width="5" height="1" fill="#8a8a8a"/><rect x="5" y="12" width="6" height="1" fill="#8a8a8a"/></svg>',
-  phone: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="3" y="9" width="10" height="5" fill="#1f7a3d" stroke="#000"/><rect x="4" y="3" width="8" height="3" fill="#25d366" stroke="#000"/><rect x="3" y="4" width="2" height="4" fill="#25d366" stroke="#000"/><rect x="11" y="4" width="2" height="4" fill="#25d366" stroke="#000"/><rect x="6" y="11" width="1" height="1" fill="#9effb8"/><rect x="9" y="11" width="1" height="1" fill="#9effb8"/></svg>',
-};
+// Ícones pixelados coloridos com sombreamento (desenho original) — ./pixelIcons.
+const G = ICON_SVG;
 
 export const APPS: OsApp[] = [
   {
