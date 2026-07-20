@@ -28,6 +28,11 @@ export default defineNuxtConfig({
         },
         { property: 'og:type', content: 'website' },
         { property: 'og:locale', content: 'pt_BR' },
+        { property: 'og:image', content: 'https://www.informatizou.com.br/og-image.png' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/logo-mark.png' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
     },
   },

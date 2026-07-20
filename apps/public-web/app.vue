@@ -15,7 +15,10 @@ const ano = 2026;
   <div class="shell">
     <header class="nav">
       <div class="nav-inner container container-wide">
-        <NuxtLink to="/" class="brand" aria-label="Informatizou — início">Informatizou</NuxtLink>
+        <NuxtLink to="/" class="brand" aria-label="Informatizou — início">
+          <img src="/logo-mark.png" alt="" class="brand-mark" width="30" height="30" />
+          <span class="brand-name">Informatizou</span>
+        </NuxtLink>
         <nav class="nav-links" aria-label="Principal">
           <a v-for="l in links" :key="l.to" :href="l.to" class="nav-link">{{ l.label }}</a>
         </nav>
@@ -79,6 +82,17 @@ const ano = 2026;
   gap: 1.5rem;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex: none;
+}
+.brand-name {
   font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: -0.02em;
