@@ -63,6 +63,28 @@ export const useAuthStore = defineStore('auth', {
       });
       this.persist();
     },
+    /** Renova o access token usando o refresh cookie (httpOnly). */
+    async refresh(): Promise<boolean> {
+      const config = useRuntimeConfig();
+      try {
+        const res = await $fetch<{ accessToken: string }>('/auth/refresh', {
+          baseURL: config.public.apiBase,
+          method: 'POST',
+          credentials: 'include',
+        });
+        this.accessToken = res.accessToken;
+        this.persist();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    /** Limpa a sessão local (sem chamar o servidor). */
+    clearLocal() {
+      this.accessToken = null;
+      this.user = null;
+      this.persist();
+    },
     async logout() {
       const config = useRuntimeConfig();
       try {
