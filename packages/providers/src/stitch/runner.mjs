@@ -57,14 +57,20 @@ async function main() {
     if (!screen) continue;
     screenId = screen.screenId ?? screen.id;
     htmlUrl = await screen.getHtml().catch(() => '');
-    for (let i = 0; i < 9 && !htmlUrl; i++) {
-      await sleep(12000);
-      const raw = await client.callTool('get_screen', {
-        projectId,
-        screenId,
-        name: `projects/${projectId}/screens/${screenId}`,
-      });
-      htmlUrl = raw?.htmlCode?.downloadUrl ?? '';
+    // get_screen também é flaky (às vezes lança "invalid argument") — não pode
+    // derrubar o runner; tratamos como "ainda não pronto" e seguimos o polling.
+    for (let i = 0; i < 14 && !htmlUrl; i++) {
+      await sleep(10000);
+      try {
+        const raw = await client.callTool('get_screen', {
+          projectId,
+          screenId,
+          name: `projects/${projectId}/screens/${screenId}`,
+        });
+        htmlUrl = raw?.htmlCode?.downloadUrl ?? '';
+      } catch (e) {
+        process.stderr.write(`get_screen poll ${i}: ${String(e?.message).slice(0, 50)}\n`);
+      }
     }
     if (!htmlUrl) process.stderr.write(`ciclo ${cycle}: HTML não veio, novo ciclo\n`);
   }
