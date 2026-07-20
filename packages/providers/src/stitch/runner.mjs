@@ -38,35 +38,37 @@ async function main() {
   const project = await stitch.createProject(projectTitle);
   const projectId = project.projectId ?? project.id;
 
-  // O generate do Stitch é FLAKY (retorna "invalid argument" de forma
-  // intermitente, ~2/3 das vezes — é experimental). Falhas voltam rápido;
-  // o sucesso leva ~85s. Retry generoso resolve.
-  let screen;
-  let lastErr;
-  for (let attempt = 1; attempt <= 10; attempt++) {
-    try {
-      screen = await project.generate(prompt, 'DESKTOP', model);
-      break;
-    } catch (e) {
-      lastErr = e;
-      process.stderr.write(`generate tentativa ${attempt} falhou: ${String(e?.message).slice(0, 80)}\n`);
-      await sleep(3000);
+  // O Stitch (experimental) é FLAKY em duas frentes: (1) o generate retorna
+  // "invalid argument" ~2/3 das vezes; (2) às vezes o HTML não materializa no
+  // polling. Retry do CICLO inteiro (gerar + esperar o HTML) resolve. Falhas
+  // do generate voltam rápido; o sucesso leva ~85s.
+  let screenId;
+  let htmlUrl = '';
+  for (let cycle = 1; cycle <= 3 && !htmlUrl; cycle++) {
+    let screen;
+    for (let attempt = 1; attempt <= 8 && !screen; attempt++) {
+      try {
+        screen = await project.generate(prompt, 'DESKTOP', model);
+      } catch (e) {
+        process.stderr.write(`gen ciclo ${cycle} tent ${attempt}: ${String(e?.message).slice(0, 60)}\n`);
+        await sleep(2500);
+      }
     }
+    if (!screen) continue;
+    screenId = screen.screenId ?? screen.id;
+    htmlUrl = await screen.getHtml().catch(() => '');
+    for (let i = 0; i < 9 && !htmlUrl; i++) {
+      await sleep(12000);
+      const raw = await client.callTool('get_screen', {
+        projectId,
+        screenId,
+        name: `projects/${projectId}/screens/${screenId}`,
+      });
+      htmlUrl = raw?.htmlCode?.downloadUrl ?? '';
+    }
+    if (!htmlUrl) process.stderr.write(`ciclo ${cycle}: HTML não veio, novo ciclo\n`);
   }
-  if (!screen) throw lastErr ?? new Error('generate falhou após retries');
-  const screenId = screen.screenId ?? screen.id;
-
-  let htmlUrl = await screen.getHtml().catch(() => '');
-  for (let i = 0; i < 12 && !htmlUrl; i++) {
-    await sleep(15000);
-    const raw = await client.callTool('get_screen', {
-      projectId,
-      screenId,
-      name: `projects/${projectId}/screens/${screenId}`,
-    });
-    htmlUrl = raw?.htmlCode?.downloadUrl ?? '';
-  }
-  if (!htmlUrl) throw new Error('HTML não ficou pronto');
+  if (!htmlUrl) throw new Error('HTML não ficou pronto após ciclos');
 
   const res = await fetch(htmlUrl);
   if (!res.ok) throw new Error(`falha ao baixar HTML (HTTP ${res.status})`);

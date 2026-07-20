@@ -83,7 +83,7 @@ export class GoogleStitchProvider implements StitchProvider {
       });
       let out = '';
       let err = '';
-      const timer = setTimeout(() => child.kill('SIGKILL'), 5 * 60 * 1000);
+      const timer = setTimeout(() => child.kill('SIGKILL'), 8 * 60 * 1000);
       child.stdout.on('data', (d) => (out += d));
       child.stderr.on('data', (d) => (err += d));
       child.on('error', (e) => {

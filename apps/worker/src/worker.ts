@@ -25,7 +25,7 @@ export function startWorkers(redisUrl: string): Worker[] {
     const worker = new Worker(name, makeProcessor(name), {
       connection,
       concurrency: 5,
-      lockDuration: 6 * 60 * 1000, // 6 min
+      lockDuration: 10 * 60 * 1000, // 10 min (Stitch pode reciclar gerações)
       stalledInterval: 60 * 1000,
       maxStalledCount: 2,
     });
