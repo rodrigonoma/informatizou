@@ -18,6 +18,8 @@
     "db:seed:raw": "prisma db seed",
     "db:ensure-admin": "dotenv -e ../../.env -- tsx prisma/ensure-admin.ts",
     "db:ensure-admin:raw": "tsx prisma/ensure-admin.ts",
+    "db:seed-demo-portal": "dotenv -e ../../.env -- tsx prisma/seed-demo-portal.ts",
+    "db:seed-demo-portal:raw": "tsx prisma/seed-demo-portal.ts",
     "db:studio": "dotenv -e ../../.env -- prisma studio",
     "db:format": "prisma format",
     "db:validate": "prisma validate"
