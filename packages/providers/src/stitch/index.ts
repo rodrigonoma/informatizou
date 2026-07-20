@@ -81,7 +81,12 @@ export class GoogleStitchProvider implements StitchProvider {
   async generate(input: StitchGenerateInput): Promise<StitchGenerateResult> {
     const accessToken = await this.mintToken();
     // Cliente explícito com token novo (evita o singleton cacheado do SDK).
-    const client = new StitchToolClient({ accessToken, projectId: this.sa.project_id });
+    // baseUrl é obrigatório — sem ela o cliente vai ao endpoint errado.
+    const client = new StitchToolClient({
+      accessToken,
+      projectId: this.sa.project_id,
+      baseUrl: process.env.STITCH_HOST || 'https://stitch.googleapis.com/mcp',
+    } as never);
     const stitch = new Stitch(client as never);
 
     const project = (await stitch.createProject(input.projectTitle ?? 'Informatizou Demo')) as {
