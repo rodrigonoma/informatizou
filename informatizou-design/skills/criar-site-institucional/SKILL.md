@@ -1,4 +1,5 @@
 ---
+name: criar-site-institucional
 description: Cria sites institucionais completos, premium, responsivos e visualmente autorais para empresas. Use quando o usuário pedir para conceber, redesenhar, implementar ou melhorar um site institucional.
 ---
 
@@ -23,11 +24,21 @@ O resultado não pode parecer um template comum, uma landing page de SaaS genér
 
 ## Entrada
 
-A solicitação do usuário estará disponível em:
-
-$ARGUMENTS
+Use a solicitação do usuário (o texto que acompanhou a invocação da skill).
+Quando invocada como slash command, os argumentos vêm em `$ARGUMENTS`; quando
+invocada como skill, use a mensagem do usuário diretamente.
 
 Analise todos os arquivos existentes no projeto antes de começar.
+
+## Recursos deste sistema
+
+Antes de definir a direção visual, carregue e siga:
+
+- `references/design-system.md` — o Informatizou Creative System (princípios,
+  tipografia, espaçamento, cores, layout). **Leia este arquivo antes do passo 2.**
+- Subagente `creative-director` — dispare-o no passo 2/3 para conceber a direção
+  visual autoral (diagnóstico, conceito, referências, tipografia, cromática,
+  movimento, elemento memorável) **antes** de escrever qualquer código.
 
 ## Processo obrigatório
 
@@ -133,15 +144,18 @@ Nunca invente prêmios, clientes, números, depoimentos ou certificações.
 
 ### 6. Implementar
 
-Stack preferencial:
+Stack preferencial (alinhada à plataforma Informatizou — Nuxt/Vue):
 
-- Next.js;
+- Nuxt 3 (Vue 3, SSR para SEO);
 - TypeScript;
 - Tailwind CSS;
-- Motion ou GSAP;
+- animações com CSS ou @vueuse/motion / GSAP;
 - componentes acessíveis;
 - imagens otimizadas;
 - fontes locais ou carregadas corretamente.
+
+Só use outra stack (por exemplo Next.js) se o projeto for avulso, fora do
+ecossistema Informatizou, e o usuário pedir explicitamente.
 
 Requisitos:
 

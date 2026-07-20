@@ -1,12 +1,11 @@
 {
   "hooks": {
-    "PostToolUse": [
+    "Stop": [
       {
-        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "npm run lint --if-present"
+            "command": "test -f package.json && npm run lint --if-present || true"
           }
         ]
       }
