@@ -118,7 +118,9 @@ services:
       args:
         APP: demo-renderer
     environment:
-      API_BASE_URL: http://api:4000
+      # Nuxt só sobrescreve o runtimeConfig privado `apiBase` via NUXT_API_BASE.
+      # (API_BASE_URL não era aplicado em runtime — a demo aparecia "indisponível".)
+      NUXT_API_BASE: http://api:4000
     ports:
       - '127.0.0.1:18032:3000'
     restart: always
