@@ -1,5 +1,6 @@
-import { GoogleAuth } from 'google-auth-library';
-import { StitchToolClient, Stitch } from '@google/stitch-sdk';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { ProviderDisabledError } from '../errors.js';
 
 /** Ambiente do provider Stitch (geração de layout premium por IA). */
@@ -43,8 +44,6 @@ export class DisabledStitchProvider implements StitchProvider {
   }
 }
 
-const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-
 interface ServiceAccount {
   project_id: string;
   [k: string]: unknown;
@@ -54,7 +53,10 @@ interface ServiceAccount {
  * Provider oficial do Google Stitch (Gemini). Autentica com conta de serviço
  * (o Stitch NÃO aceita API key), cria um projeto, gera a tela com o modelo Pro
  * e faz polling até o HTML ficar pronto (o screenshot sai antes do código).
- * Cliente instanciado por chamada com token novo (o token OAuth expira ~1h).
+ *
+ * A geração roda em um SUBPROCESSO Node fresco (runner.mjs): no processo longo
+ * do worker o SDK do Stitch acumula estado (transport MCP) e falha
+ * ("create_project invalid argument"); num processo novo funciona sempre.
  */
 export class GoogleStitchProvider implements StitchProvider {
   public readonly name = 'stitch';
@@ -67,68 +69,44 @@ export class GoogleStitchProvider implements StitchProvider {
     return true;
   }
 
-  private async mintToken(): Promise<string> {
-    const auth = new GoogleAuth({
-      credentials: this.sa as Record<string, unknown>,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+  generate(input: StitchGenerateInput): Promise<StitchGenerateResult> {
+    const runner = join(dirname(fileURLToPath(import.meta.url)), 'runner.mjs');
+    const saB64 = Buffer.from(JSON.stringify(this.sa)).toString('base64');
+    return new Promise<StitchGenerateResult>((resolve, reject) => {
+      const child = spawn('node', [runner, input.projectTitle ?? 'Informatizou Demo'], {
+        env: {
+          ...process.env,
+          GOOGLE_STITCH_SA_B64: saB64,
+          STITCH_MODEL: input.modelId ?? this.model,
+        },
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      let out = '';
+      let err = '';
+      const timer = setTimeout(() => child.kill('SIGKILL'), 5 * 60 * 1000);
+      child.stdout.on('data', (d) => (out += d));
+      child.stderr.on('data', (d) => (err += d));
+      child.on('error', (e) => {
+        clearTimeout(timer);
+        reject(e);
+      });
+      child.on('close', (code) => {
+        clearTimeout(timer);
+        if (code !== 0) {
+          reject(new Error(`stitch runner saiu com código ${code}: ${err.slice(0, 300)}`));
+          return;
+        }
+        try {
+          const r = JSON.parse(out) as StitchGenerateResult;
+          if (!r.html) throw new Error('sem html');
+          resolve(r);
+        } catch {
+          reject(new Error(`stitch runner: saída inválida (${err.slice(0, 200)})`));
+        }
+      });
+      child.stdin.write(input.prompt);
+      child.stdin.end();
     });
-    const client = await auth.getClient();
-    const token = (await client.getAccessToken()).token;
-    if (!token) throw new Error('stitch: não foi possível obter o token OAuth');
-    return token;
-  }
-
-  async generate(input: StitchGenerateInput): Promise<StitchGenerateResult> {
-    const accessToken = await this.mintToken();
-    // Cliente explícito com token novo (evita o singleton cacheado do SDK).
-    // baseUrl é obrigatório — sem ela o cliente vai ao endpoint errado.
-    const client = new StitchToolClient({
-      accessToken,
-      projectId: this.sa.project_id,
-      baseUrl: process.env.STITCH_HOST || 'https://stitch.googleapis.com/mcp',
-    } as never);
-    const stitch = new Stitch(client as never);
-
-    const project = (await stitch.createProject(input.projectTitle ?? 'Informatizou Demo')) as {
-      projectId?: string;
-      id?: string;
-    };
-    const projectId = project.projectId ?? project.id;
-    if (!projectId) throw new Error('stitch: projeto sem id');
-
-    const screen = (await (project as unknown as {
-      generate(p: string, d?: string, m?: string): Promise<{ screenId?: string; id?: string; getHtml(): Promise<string>; getImage(): Promise<string> }>;
-    }).generate(input.prompt, input.deviceType ?? 'DESKTOP', input.modelId ?? this.model));
-    const screenId = screen.screenId ?? screen.id;
-    if (!screenId) throw new Error('stitch: tela sem id');
-
-    // O HTML pode sair alguns segundos depois do screenshot — polling.
-    let htmlUrl = await screen.getHtml().catch(() => '');
-    for (let i = 0; i < 12 && !htmlUrl; i++) {
-      await sleep(15000);
-      const raw = (await (client as unknown as {
-        callTool(name: string, args: unknown): Promise<{ htmlCode?: { downloadUrl?: string } }>;
-      }).callTool('get_screen', {
-        projectId,
-        screenId,
-        name: `projects/${projectId}/screens/${screenId}`,
-      }));
-      htmlUrl = raw?.htmlCode?.downloadUrl ?? '';
-    }
-    if (!htmlUrl) throw new Error('stitch: HTML não ficou pronto no tempo esperado');
-
-    const res = await fetch(htmlUrl);
-    if (!res.ok) throw new Error(`stitch: falha ao baixar HTML (HTTP ${res.status})`);
-    const html = await res.text();
-
-    let screenshotUrl: string | undefined;
-    try {
-      screenshotUrl = (await screen.getImage()) || undefined;
-    } catch {
-      screenshotUrl = undefined;
-    }
-
-    return { html, screenshotUrl, projectId, screenId };
   }
 }
 
