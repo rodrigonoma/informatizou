@@ -20,7 +20,15 @@ export function startWorkers(redisUrl: string): Worker[] {
   const connection = parseRedisConnection(redisUrl);
 
   return ALL_QUEUE_NAMES.map((name) => {
-    const worker = new Worker(name, makeProcessor(name), { connection, concurrency: 5 });
+    // lockDuration alto: jobs longos (Stitch ~85s, screenshots) não podem
+    // estourar o lock padrão de 30s e virar "stalled" (o job trava/reprocessa).
+    const worker = new Worker(name, makeProcessor(name), {
+      connection,
+      concurrency: 5,
+      lockDuration: 6 * 60 * 1000, // 6 min
+      stalledInterval: 60 * 1000,
+      maxStalledCount: 2,
+    });
     worker.on('failed', (job, err) => {
       log.error({ queue: name, jobId: job?.id, err }, 'job falhou');
     });
